@@ -100,7 +100,7 @@ export default function Dashboard() {
     if (occ.platform === "Perso" || occ.amount === 0) return "perso";
     return "busy";
   };
-  const shortName = name => name.replace(/^(Riad|Dar)\s+/i,"").substring(0,6);
+  const shortName = name => name.length > 10 ? name.substring(0,9)+"…" : name;
   const occCell = s => ({ busy:{bg:"#E1F5EE",color:"#085041",border:"#9FE1CB"}, perso:{bg:"#EEEDFE",color:"#3C3489",border:"#CECBF6"}, free:{bg:"#f5f5f5",color:"#c0c0c0",border:"#e8e8e8"} }[s] || {bg:"#f5f5f5",color:"#c0c0c0",border:"#e8e8e8"});
   const greet = now.getHours()<12?"Bonjour":now.getHours()<18?"Bon après-midi":"Bonsoir";
 
