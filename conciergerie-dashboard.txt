@@ -1,0 +1,62 @@
+Résumé complet — Projet conciergerie-dashboard
+Contexte
+Application de gestion pour une conciergerie gérant 40 riads/maisons au Maroc, avec 25+ propriétaires différents. Basée sur le projet Riad Dashboard existant. Rémunération par commission % sur chaque réservation.
+
+Stack technique
+React + Vite (vite v8)
+Firebase Firestore — base de données
+react-router-dom — navigation
+recharts — graphiques
+xlsx — export Excel
+Déploiement prévu : Vercel
+Firebase
+Projet : conciergerie-dashboard
+Config :
+js
+apiKey: "AIzaSyCg52t0TXukf_GHf5qYU2YTpL-Hw-4av4A"
+authDomain: "conciergerie-dashboard.firebaseapp.com"
+projectId: "conciergerie-dashboard"
+storageBucket: "conciergerie-dashboard.firebasestorage.app"
+messagingSenderId: "492973983856"
+appId: "1:492973983856:web:03211dd5dccf85f1734cb5"
+Firestore en mode test, région eur3
+Dossier local
+C:\Users\pc03\OneDrive - SARL JL26\Divers\Applis Séb\conciergerie-dashboard\
+Repo GitHub
+https://github.com/sebastienforcellini-coder/conciergerie-dashboard
+Structure des fichiers src/ (tous créés et fonctionnels)
+src/
+├── App.jsx          ✅ sidebar + routing
+├── firebase.js      ✅ config Firebase
+├── main.jsx         ✅ point d'entrée
+└── pages/
+    ├── Properties.jsx  ✅ liste + ajout + suppression propriétés
+    ├── Calendar.jsx    ✅ calendrier multi-propriétés par mois
+    ├── Finances.jsx    ✅ stats globales + tableau par propriété
+    └── Export.jsx      ✅ export Excel par propriété/année
+Collections Firestore prévues
+Collection	Contenu
+properties	name, owner, phone, email, address, icalAirbnb, icalBooking, commissionRate
+bookings	propertyId, platform, name, checkIn, checkOut, amount, commission, paid, nights, guests
+expenses	propertyId, category, amount, date, description
+recurring	propertyId, description, amount, months
+Ce qui est fait ✅
+Structure complète React/Vite/Firebase
+Page Propriétés (ajout/suppression, testé et fonctionnel avec Firebase)
+Page Calendrier multi-propriétés (navigation mois/année, couleurs par plateforme)
+Page Finances (4 cartes stats + tableau par propriété avec commission/reversement)
+Page Export Excel (1 onglet par propriété)
+Ce qui reste à faire ⏳
+Push GitHub — code pas encore sauvegardé
+Déploiement Vercel
+Gestion des réservations — formulaire ajout/modif par propriété
+Sync iCal — import auto Airbnb + Booking
+Gestion dépenses — charges fixes et ponctuelles par propriété
+Plateformes : Airbnb, Booking, Direct
+Copie ce résumé et colle-le en début de conversation dans ton nouveau compte. 👍
+
+
+
+
+
+
