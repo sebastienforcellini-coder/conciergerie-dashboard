@@ -135,41 +135,92 @@ export default function Dashboard() {
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:14, marginBottom:14 }}>
 
         <div style={card}>
-          <div style={cardHd}>Check-ins aujourd'hui</div>
-          {checkinsToday.length===0 && <div style={{ fontSize:13, color:"#c0c0c0", padding:"12px 0", textAlign:"center" }}>Aucun check-in aujourd'hui</div>}
-          {checkinsToday.map(b => {
-            const prop = getPropForBooking(b);
-            const plt  = PLT[b.platform]||PLT["Autre"];
-            return (
-              <div key={b.id} style={brow}>
-                <div style={{ width:32, height:32, borderRadius:"50%", background:plt.bg, color:plt.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:600, flexShrink:0 }}>{(b.name||"?")[0].toUpperCase()}</div>
-                <div style={{ flex:1, minWidth:0 }}>
-                  <div style={{ fontSize:13, fontWeight:500, color:"#1a1a2e" }}>{b.name}</div>
-                  <div style={{ fontSize:11, color:"#9ca3af", marginTop:1 }}>{prop?.name||"—"} · {b.nights||"?"} nuit{(b.nights||0)>1?"s":""}</div>
-                </div>
-                <div style={{ textAlign:"right" }}>
-                  <div style={{ fontSize:12, fontWeight:600 }}>{fmt(b.amount||0)} MAD</div>
-                  <div style={{ fontSize:10, background:plt.bg, color:plt.color, padding:"1px 6px", borderRadius:99, marginTop:2, display:"inline-block" }}>{b.platform}</div>
-                </div>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
+            <div style={{ fontSize:11, fontWeight:600, color:"#9ca3af", textTransform:"uppercase", letterSpacing:".5px" }}>Mouvements du jour</div>
+            <div style={{ display:"flex", gap:8 }}>
+              <span style={{ background:"#E1F5EE", color:"#085041", fontSize:11, fontWeight:500, padding:"3px 10px", borderRadius:99 }}>
+                {checkinsToday.length} arrivée{checkinsToday.length!==1?"s":""}
+              </span>
+              <span style={{ background:"#F1EFE8", color:"#5F5E5A", fontSize:11, fontWeight:500, padding:"3px 10px", borderRadius:99 }}>
+                {checkoutsToday.length} départ{checkoutsToday.length!==1?"s":""}
+              </span>
+            </div>
+          </div>
+
+          {checkinsToday.length===0 && checkoutsToday.length===0 && (
+            <div style={{ fontSize:13, color:"#c0c0c0", padding:"16px 0", textAlign:"center" }}>Aucun mouvement aujourd'hui</div>
+          )}
+
+          {checkinsToday.length>0 && (
+            <div style={{ marginBottom:checkoutsToday.length>0?16:0 }}>
+              <div style={{ fontSize:11, color:"#0F6E56", fontWeight:600, marginBottom:8, display:"flex", alignItems:"center", gap:6 }}>
+                <div style={{ width:6, height:6, borderRadius:"50%", background:"#1D9E75" }}/>
+                ARRIVÉES
               </div>
-            );
-          })}
-          {checkoutsToday.length>0 && <>
-            <div style={{ ...cardHd, marginTop:16, paddingTop:14, borderTop:"1px solid #f5f5f5" }}>Check-outs aujourd'hui</div>
-            {checkoutsToday.map(b => {
-              const prop = getPropForBooking(b);
-              return (
-                <div key={b.id} style={brow}>
-                  <div style={{ width:32, height:32, borderRadius:"50%", background:"#f5f5f5", color:"#888", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:600, flexShrink:0 }}>{(b.name||"?")[0].toUpperCase()}</div>
-                  <div style={{ flex:1 }}>
-                    <div style={{ fontSize:13, fontWeight:500, color:"#1a1a2e" }}>{b.name}</div>
-                    <div style={{ fontSize:11, color:"#9ca3af" }}>{prop?.name||"—"}</div>
+              {checkinsToday.map(b => {
+                const prop = getPropForBooking(b);
+                const plt  = PLT[b.platform]||PLT["Autre"];
+                const totalGuests = Number(b.guests)||0;
+                return (
+                  <div key={b.id} style={{ ...brow, alignItems:"flex-start" }}>
+                    <div style={{ width:34, height:34, borderRadius:"50%", background:plt.bg, color:plt.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, flexShrink:0, marginTop:2 }}>
+                      {(b.name||"?")[0].toUpperCase()}
+                    </div>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ fontSize:13, fontWeight:600, color:"#1a1a2e" }}>{b.name||"—"}</div>
+                      <div style={{ fontSize:11, color:"#9ca3af", marginTop:2 }}>{prop?.name||"—"} · {b.nights||"?"} nuit{(b.nights||0)>1?"s":""}</div>
+                      <div style={{ display:"flex", alignItems:"center", gap:6, marginTop:4 }}>
+                        <div style={{ display:"flex", alignItems:"center", gap:4, background:"#1a1a2e", color:"white", fontSize:11, fontWeight:600, padding:"2px 8px", borderRadius:99 }}>
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                          {totalGuests > 0 ? `${totalGuests} pers.` : "? pers."}
+                        </div>
+                        <div style={{ fontSize:10, background:plt.bg, color:plt.color, padding:"2px 8px", borderRadius:99, fontWeight:500 }}>{b.platform}</div>
+                      </div>
+                    </div>
+                    <div style={{ textAlign:"right", flexShrink:0 }}>
+                      <div style={{ fontSize:13, fontWeight:700, color:"#1a1a2e" }}>{fmt(b.amount||0)} MAD</div>
+                      <div style={{ fontSize:11, color:b.paid?"#0F6E56":"#A32D2D", marginTop:2, fontWeight:500 }}>{b.paid?"Encaissé":"Non payé"}</div>
+                    </div>
                   </div>
-                  <div style={{ fontSize:12, fontWeight:500, color:b.paid?"#0F6E56":"#A32D2D" }}>{b.paid?"Encaissé":"Non payé"}</div>
-                </div>
-              );
-            })}
-          </>}
+                );
+              })}
+            </div>
+          )}
+
+          {checkoutsToday.length>0 && (
+            <div style={{ paddingTop:checkinsToday.length>0?14:0, borderTop:checkinsToday.length>0?"1px solid #f5f5f5":"none" }}>
+              <div style={{ fontSize:11, color:"#5F5E5A", fontWeight:600, marginBottom:8, display:"flex", alignItems:"center", gap:6 }}>
+                <div style={{ width:6, height:6, borderRadius:"50%", background:"#888780" }}/>
+                DÉPARTS
+              </div>
+              {checkoutsToday.map(b => {
+                const prop = getPropForBooking(b);
+                const plt  = PLT[b.platform]||PLT["Autre"];
+                const totalGuests = Number(b.guests)||0;
+                return (
+                  <div key={b.id} style={{ ...brow, alignItems:"flex-start" }}>
+                    <div style={{ width:34, height:34, borderRadius:"50%", background:"#f5f5f5", color:"#888", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, flexShrink:0, marginTop:2 }}>
+                      {(b.name||"?")[0].toUpperCase()}
+                    </div>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ fontSize:13, fontWeight:600, color:"#1a1a2e" }}>{b.name||"—"}</div>
+                      <div style={{ fontSize:11, color:"#9ca3af", marginTop:2 }}>{prop?.name||"—"}</div>
+                      <div style={{ display:"flex", alignItems:"center", gap:6, marginTop:4 }}>
+                        <div style={{ display:"flex", alignItems:"center", gap:4, background:"#f5f5f5", color:"#6b7280", fontSize:11, fontWeight:600, padding:"2px 8px", borderRadius:99, border:"1px solid #e5e7eb" }}>
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                          {totalGuests > 0 ? `${totalGuests} pers.` : "? pers."}
+                        </div>
+                        <div style={{ fontSize:10, background:plt.bg, color:plt.color, padding:"2px 8px", borderRadius:99, fontWeight:500 }}>{b.platform}</div>
+                      </div>
+                    </div>
+                    <div style={{ textAlign:"right", flexShrink:0 }}>
+                      <div style={{ fontSize:12, fontWeight:500, color:b.paid?"#0F6E56":"#A32D2D" }}>{b.paid?"Encaissé":"Non payé"}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         <div style={card}>
