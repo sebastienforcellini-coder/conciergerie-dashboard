@@ -6,334 +6,366 @@ import { calcCommission, commissionLabel } from "./Properties";
 
 const PLATFORMS = ["Airbnb", "Booking", "Direct", "Gens de confiance", "Autre"];
 const MONTHS = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
-const PLT_COLORS = {
-  Airbnb: { bg: "#ff585018", color: "#c0392b" },
-  Booking: { bg: "#00319818", color: "#003198" },
-  Direct: { bg: "#2ecc7118", color: "#1a7a44" },
-  "Gens de confiance": { bg: "#EEEDFE", color: "#534AB7" },
-  Autre: { bg: "#f0f0f0", color: "#666" },
+const PLT = {
+  Airbnb:              { bg:"#FAECE7", color:"#993C1D" },
+  Booking:             { bg:"#E6F1FB", color:"#0C447C" },
+  Direct:              { bg:"#EAF3DE", color:"#27500A" },
+  "Gens de confiance": { bg:"#EEEDFE", color:"#3C3489" },
+  Autre:               { bg:"#F1EFE8", color:"#5F5E5A" },
 };
 
-const emptyBooking = {
-  name: "", platform: "Airbnb", checkIn: "", checkOut: "",
-  amount: "", guests: "", notes: "", paid: false,
-};
+const MODES = [
+  { value:"percent_brut",    label:"% sur montant brut",         desc:"Ex : 20% du total Airbnb" },
+  { value:"percent_net",     label:"% sur montant net",          desc:"Après déduction plateforme" },
+  { value:"fixed_per_night", label:"Montant fixe / nuit",        desc:"Ex : 200 MAD par nuit" },
+  { value:"per_platform",    label:"% différent par plateforme", desc:"Airbnb 20%, Direct 15%..." },
+];
 
-const s = {
-  page: { padding: 28 },
-  back: { background: "none", border: "none", color: "#888", cursor: "pointer", fontSize: 13, padding: "0 0 16px", display: "flex", alignItems: "center", gap: 6 },
-  header: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24 },
-  h1: { margin: "0 0 4px", fontSize: 22, fontWeight: 500 },
-  owner: { fontSize: 14, color: "#888" },
-  badge: (bg, color) => ({ background: bg, color, fontSize: 12, padding: "3px 10px", borderRadius: 99, fontWeight: 500 }),
-  kpiRow: { display: "grid", gridTemplateColumns: "repeat(5, minmax(0,1fr))", gap: 10, marginBottom: 20 },
-  kpi: { background: "#f8f8f8", borderRadius: 10, padding: "14px 16px" },
-  kpiLbl: { fontSize: 11, color: "#999", marginBottom: 6, textTransform: "uppercase", letterSpacing: ".4px" },
-  kpiVal: (color) => ({ fontSize: 20, fontWeight: 500, color: color || "#1a1a2e" }),
-  row2: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 },
-  card: { background: "white", border: "1px solid #f0f0f0", borderRadius: 12, padding: 20 },
-  cardHd: { fontSize: 11, fontWeight: 600, color: "#888", textTransform: "uppercase", letterSpacing: ".5px", marginBottom: 14 },
-  btn: { background: "#1a1a2e", color: "white", border: "none", padding: "9px 18px", borderRadius: 8, cursor: "pointer", fontSize: 13 },
-  btnSm: { background: "none", border: "1px solid #e0e0e0", color: "#666", padding: "5px 10px", borderRadius: 6, cursor: "pointer", fontSize: 12 },
-  input: { padding: "8px 10px", borderRadius: 8, border: "1px solid #e0e0e0", fontSize: 13, width: "100%", boxSizing: "border-box" },
-  select: { padding: "8px 10px", borderRadius: 8, border: "1px solid #e0e0e0", fontSize: 13, width: "100%", background: "white" },
-  label: { fontSize: 11, color: "#888", display: "block", marginBottom: 3 },
-  brow: { display: "flex", alignItems: "center", gap: 10, padding: "9px 0", borderBottom: "1px solid #f5f5f5" },
-  yearBtn: (active) => ({
-    padding: "5px 12px", borderRadius: 6, border: "1px solid " + (active ? "#1a1a2e" : "#e0e0e0"),
-    background: active ? "#1a1a2e" : "white", color: active ? "white" : "#666",
-    cursor: "pointer", fontSize: 13
-  }),
-};
+const emptyBooking = { name:"", platform:"Airbnb", checkIn:"", checkOut:"", amount:"", guests:"", notes:"", paid:false };
 
-function nights(checkIn, checkOut) {
-  if (!checkIn || !checkOut) return 0;
-  return Math.max(0, Math.round((new Date(checkOut) - new Date(checkIn)) / 86400000));
-}
-
+function nights(a,b) { if(!a||!b) return 0; return Math.max(0,Math.round((new Date(b)-new Date(a))/86400000)); }
 function fmt(n) { return Math.round(n).toLocaleString("fr-FR"); }
+
+const st = {
+  input:  { padding:"9px 11px", borderRadius:8, border:"1px solid #e5e7eb", fontSize:13, width:"100%", boxSizing:"border-box" },
+  label:  { fontSize:12, color:"#6b7280", display:"block", marginBottom:3 },
+  card:   { background:"white", border:"1px solid #f0f0f0", borderRadius:14, padding:20, boxShadow:"0 1px 4px rgba(0,0,0,.05)" },
+  cardHd: { fontSize:11, fontWeight:600, color:"#9ca3af", textTransform:"uppercase", letterSpacing:".5px", marginBottom:14 },
+  btn:    { background:"#1a1a2e", color:"white", border:"none", padding:"9px 18px", borderRadius:9, cursor:"pointer", fontSize:13, fontWeight:500 },
+  btnSm:  { background:"none", border:"1px solid #e5e7eb", color:"#6b7280", padding:"6px 12px", borderRadius:7, cursor:"pointer", fontSize:12 },
+  sectionTitle: { fontSize:11, fontWeight:600, color:"#9ca3af", textTransform:"uppercase", letterSpacing:".5px", margin:"20px 0 12px" },
+};
+
+function CommissionConfigurator({ rules, onChange }) {
+  const set = (key,val) => onChange({...rules,[key]:val});
+  const setRate = (p,val) => onChange({...rules,rates:{...rules.rates,[p]:Number(val)}});
+  return (
+    <div>
+      <div style={st.sectionTitle}>Modèle de commission</div>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:16 }}>
+        {MODES.map(m => (
+          <div key={m.value} onClick={()=>set("mode",m.value)}
+            style={{ border:rules.mode===m.value?"2px solid #1a1a2e":"1px solid #e5e7eb", borderRadius:10, padding:"10px 14px", cursor:"pointer", background:rules.mode===m.value?"#f8f8ff":"white" }}>
+            <div style={{ fontSize:13, fontWeight:500, color:rules.mode===m.value?"#1a1a2e":"#374151" }}>{m.label}</div>
+            <div style={{ fontSize:11, color:"#9ca3af", marginTop:2 }}>{m.desc}</div>
+          </div>
+        ))}
+      </div>
+      {(rules.mode==="percent_brut"||rules.mode==="percent_net") && (
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:12 }}>
+          <div><label style={st.label}>Taux (%)</label><input type="number" style={st.input} value={rules.rate} onChange={e=>set("rate",Number(e.target.value))} min={0} max={100}/></div>
+        </div>
+      )}
+      {rules.mode==="fixed_per_night" && (
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:12 }}>
+          <div><label style={st.label}>Montant fixe / nuit (MAD)</label><input type="number" style={st.input} value={rules.amountPerNight} onChange={e=>set("amountPerNight",Number(e.target.value))} min={0}/></div>
+        </div>
+      )}
+      {rules.mode==="per_platform" && (
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr 1fr", gap:10, marginBottom:12 }}>
+          {PLATFORMS.slice(0,4).map(p => (
+            <div key={p}><label style={st.label}>{p} (%)</label><input type="number" style={st.input} value={rules.rates?.[p]??20} onChange={e=>setRate(p,e.target.value)} min={0} max={100}/></div>
+          ))}
+        </div>
+      )}
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:12 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:8, paddingTop:4 }}>
+          <input type="checkbox" id="pfee" checked={rules.platformFeeIncluded} onChange={e=>set("platformFeeIncluded",e.target.checked)} style={{ width:16,height:16 }}/>
+          <label htmlFor="pfee" style={{ fontSize:13, color:"#374151", cursor:"pointer" }}>Déduire commission plateforme</label>
+        </div>
+        {rules.platformFeeIncluded && (
+          <div><label style={st.label}>Taux plateforme (%)</label><input type="number" style={st.input} value={rules.platformFeeRate} onChange={e=>set("platformFeeRate",Number(e.target.value))} min={0} max={30} step={0.5}/></div>
+        )}
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:12 }}>
+        <div><label style={st.label}>Frais ménage / séjour (MAD)</label><input type="number" style={st.input} value={rules.cleaningFee||0} onChange={e=>set("cleaningFee",Number(e.target.value))} min={0}/></div>
+      </div>
+      <div><label style={st.label}>Notes / accord particulier</label>
+        <textarea style={{ ...st.input, resize:"vertical", minHeight:56, fontFamily:"inherit" }} value={rules.notes||""} onChange={e=>set("notes",e.target.value)} placeholder="Ex : taux réduit en juillet-août..."/>
+      </div>
+    </div>
+  );
+}
 
 export default function PropertyDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [property, setProperty] = useState(null);
-  const [bookings, setBookings] = useState([]);
-  const [year, setYear] = useState(new Date().getFullYear());
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState(emptyBooking);
-  const [editId, setEditId] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [property, setProperty]   = useState(null);
+  const [bookings, setBookings]   = useState([]);
+  const [year, setYear]           = useState(new Date().getFullYear());
+  const [showForm, setShowForm]   = useState(false);
+  const [showEdit, setShowEdit]   = useState(false);
+  const [editForm, setEditForm]   = useState(null);
+  const [form, setForm]           = useState(emptyBooking);
+  const [editId, setEditId]       = useState(null);
+  const [loading, setLoading]     = useState(true);
 
   const load = async () => {
     const [pSnap, bSnap] = await Promise.all([
-      getDocs(collection(db, "properties")),
-      getDocs(query(collection(db, "bookings"), where("propertyId", "==", id)))
+      getDocs(collection(db,"properties")),
+      getDocs(query(collection(db,"bookings"), where("propertyId","==",id)))
     ]);
-    const props = pSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-    setProperty(props.find(p => p.id === id) || null);
-    setBookings(bSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+    const props = pSnap.docs.map(d => ({id:d.id,...d.data()}));
+    const prop  = props.find(p => p.id===id) || null;
+    setProperty(prop);
+    setBookings(bSnap.docs.map(d => ({id:d.id,...d.data()})));
+    if (prop) setEditForm({
+      name: prop.name||"", owner: prop.owner||"", phone: prop.phone||"",
+      email: prop.email||"", address: prop.address||"",
+      icalAirbnb: prop.icalAirbnb||"", icalBooking: prop.icalBooking||"",
+      commissionRules: prop.commissionRules || { mode:"percent_brut", rate:20, platformFeeIncluded:false, platformFeeRate:3, cleaningFee:0, notes:"", rates:{Airbnb:20,Booking:18,Direct:15,"Gens de confiance":10}, amountPerNight:200 },
+    });
     setLoading(false);
   };
 
   useEffect(() => { load(); }, [id]);
 
+  const saveEdit = async () => {
+    if (!editForm.name||!editForm.owner) return alert("Nom et propriétaire requis");
+    await updateDoc(doc(db,"properties",id), editForm);
+    setShowEdit(false);
+    load();
+  };
+
   const yearBookings = bookings.filter(b => b.checkIn?.startsWith(String(year)));
 
-  const totalStats = yearBookings.reduce((acc, b) => {
-    const { platformFee, commission, cleaning, reversement } = calcCommission(b, property || {});
-    return {
-      revenue: acc.revenue + (b.amount || 0),
-      platformFee: acc.platformFee + platformFee,
-      commission: acc.commission + commission,
-      cleaning: acc.cleaning + cleaning,
-      reversement: acc.reversement + reversement,
-      nights: acc.nights + (b.nights || nights(b.checkIn, b.checkOut)),
-    };
-  }, { revenue: 0, platformFee: 0, commission: 0, cleaning: 0, reversement: 0, nights: 0 });
+  const totals = yearBookings.reduce((acc,b) => {
+    const { platformFee, commission, cleaning, reversement } = calcCommission(b, property||{});
+    return { revenue:acc.revenue+(b.amount||0), platformFee:acc.platformFee+platformFee, commission:acc.commission+commission, cleaning:acc.cleaning+cleaning, reversement:acc.reversement+reversement, nights:acc.nights+(b.nights||nights(b.checkIn,b.checkOut)) };
+  }, { revenue:0, platformFee:0, commission:0, cleaning:0, reversement:0, nights:0 });
 
-  const monthlyRevenue = MONTHS.map((_, mi) => {
+  const monthlyRevenue = MONTHS.map((_,mi) => {
     const mb = yearBookings.filter(b => b.checkIn?.startsWith(`${year}-${String(mi+1).padStart(2,"0")}`));
-    return mb.reduce((s, b) => s + (b.amount || 0), 0);
+    return mb.reduce((s,b) => s+(b.amount||0), 0);
   });
   const maxMonth = Math.max(...monthlyRevenue, 1);
 
-  const openForm = (b = null) => {
-    if (b) {
-      setForm({ name: b.name, platform: b.platform, checkIn: b.checkIn, checkOut: b.checkOut, amount: b.amount, guests: b.guests || "", notes: b.notes || "", paid: b.paid || false });
-      setEditId(b.id);
-    } else {
-      setForm(emptyBooking);
-      setEditId(null);
-    }
+  const openForm = (b=null) => {
+    if (b) { setForm({name:b.name,platform:b.platform,checkIn:b.checkIn,checkOut:b.checkOut,amount:b.amount,guests:b.guests||"",notes:b.notes||"",paid:b.paid||false}); setEditId(b.id); }
+    else   { setForm(emptyBooking); setEditId(null); }
     setShowForm(true);
   };
 
   const saveBooking = async () => {
-    if (!form.checkIn || !form.checkOut || !form.amount) return alert("Dates et montant requis");
-    const n = nights(form.checkIn, form.checkOut);
-    const data = { ...form, propertyId: id, nights: n, amount: Number(form.amount), guests: form.guests ? String(form.guests) : "" };
-    if (editId) {
-      await updateDoc(doc(db, "bookings", editId), data);
-    } else {
-      await addDoc(collection(db, "bookings"), data);
-    }
-    setShowForm(false);
-    setForm(emptyBooking);
-    setEditId(null);
-    load();
+    if (!form.checkIn||!form.checkOut||!form.amount) return alert("Dates et montant requis");
+    const n = nights(form.checkIn,form.checkOut);
+    const data = {...form, propertyId:id, nights:n, amount:Number(form.amount), guests:form.guests?String(form.guests):""};
+    if (editId) await updateDoc(doc(db,"bookings",editId), data);
+    else        await addDoc(collection(db,"bookings"), data);
+    setShowForm(false); setForm(emptyBooking); setEditId(null); load();
   };
 
   const deleteBooking = async (bid) => {
     if (!confirm("Supprimer cette réservation ?")) return;
-    await deleteDoc(doc(db, "bookings", bid));
-    load();
+    await deleteDoc(doc(db,"bookings",bid)); load();
   };
 
   const togglePaid = async (b) => {
-    await updateDoc(doc(db, "bookings", b.id), { paid: !b.paid });
-    load();
+    await updateDoc(doc(db,"bookings",b.id), {paid:!b.paid}); load();
   };
 
-  if (loading) return <div style={{ padding: 32, color: "#999" }}>Chargement...</div>;
-  if (!property) return <div style={{ padding: 32, color: "#999" }}>Propriété introuvable.</div>;
+  if (loading) return <div style={{ display:"flex",alignItems:"center",justifyContent:"center",height:"100vh",color:"#9ca3af" }}>Chargement...</div>;
+  if (!property) return <div style={{ padding:32, color:"#9ca3af" }}>Propriété introuvable.</div>;
 
   return (
-    <div style={s.page}>
-      <button style={s.back} onClick={() => navigate("/")}>← Retour</button>
+    <div style={{ padding:"24px 28px" }}>
+      <button style={{ background:"none", border:"none", color:"#9ca3af", cursor:"pointer", fontSize:13, padding:"0 0 16px", display:"flex", alignItems:"center", gap:6 }} onClick={()=>navigate("/properties")}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        Retour aux propriétés
+      </button>
 
-      <div style={s.header}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:24 }}>
         <div>
-          <h1 style={s.h1}>{property.name}</h1>
-          <div style={s.owner}>{property.owner}{property.phone ? ` · ${property.phone}` : ""}{property.email ? ` · ${property.email}` : ""}</div>
-          {property.address && <div style={{ fontSize: 13, color: "#aaa", marginTop: 2 }}>{property.address}</div>}
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
-          <span style={s.badge("#f0c04030", "#b8860b")}>{commissionLabel(property)}</span>
+          <h1 style={{ fontSize:22, fontWeight:600, color:"#1a1a2e", marginBottom:4 }}>{property.name}</h1>
+          <div style={{ fontSize:13, color:"#9ca3af", display:"flex", gap:16, flexWrap:"wrap" }}>
+            <span>{property.owner}</span>
+            {property.phone   && <span>· {property.phone}</span>}
+            {property.email   && <span>· {property.email}</span>}
+            {property.address && <span>· {property.address}</span>}
+          </div>
           {property.commissionRules?.notes && (
-            <span style={{ fontSize: 11, color: "#aaa", fontStyle: "italic", maxWidth: 200, textAlign: "right" }}>{property.commissionRules.notes}</span>
+            <div style={{ fontSize:12, color:"#9ca3af", fontStyle:"italic", marginTop:4 }}>{property.commissionRules.notes}</div>
           )}
+        </div>
+        <div style={{ display:"flex", gap:10, alignItems:"center" }}>
+          <span style={{ background:"#f0c04028", color:"#b8860b", fontSize:12, fontWeight:600, padding:"4px 12px", borderRadius:99 }}>{commissionLabel(property)}</span>
+          <button onClick={()=>setShowEdit(!showEdit)} style={{ display:"flex", alignItems:"center", gap:6, background:"white", border:"1px solid #e5e7eb", color:"#374151", padding:"8px 16px", borderRadius:9, cursor:"pointer", fontSize:13, fontWeight:500, boxShadow:"0 1px 3px rgba(0,0,0,.06)" }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Modifier la fiche
+          </button>
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-        {[2024, 2025, 2026, 2027].map(y => (
-          <button key={y} style={s.yearBtn(year === y)} onClick={() => setYear(y)}>{y}</button>
+      {showEdit && editForm && (
+        <div style={{ background:"white", borderRadius:14, padding:28, marginBottom:24, border:"1px solid #f0f0f0", boxShadow:"0 4px 16px rgba(0,0,0,.06)" }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
+            <h3 style={{ margin:0, fontSize:16, fontWeight:500 }}>Modifier la fiche</h3>
+            <button onClick={()=>setShowEdit(false)} style={{ background:"none", border:"none", color:"#9ca3af", cursor:"pointer", fontSize:20, lineHeight:1 }}>×</button>
+          </div>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:4 }}>
+            {[["name","Nom de la propriété *"],["owner","Propriétaire *"],["phone","Téléphone"],["email","Email"],["address","Adresse"]].map(([key,label]) => (
+              <div key={key}>
+                <label style={st.label}>{label}</label>
+                <input style={st.input} value={editForm[key]||""} onChange={e=>setEditForm({...editForm,[key]:e.target.value})}/>
+              </div>
+            ))}
+          </div>
+          <div style={st.sectionTitle}>Liens iCal</div>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:4 }}>
+            {[["icalAirbnb","iCal Airbnb"],["icalBooking","iCal Booking"]].map(([key,label]) => (
+              <div key={key}>
+                <label style={st.label}>{label}</label>
+                <input style={st.input} value={editForm[key]||""} onChange={e=>setEditForm({...editForm,[key]:e.target.value})} placeholder="https://..."/>
+              </div>
+            ))}
+          </div>
+          <CommissionConfigurator rules={editForm.commissionRules} onChange={r=>setEditForm({...editForm,commissionRules:r})}/>
+          <div style={{ display:"flex", gap:10, marginTop:20 }}>
+            <button onClick={saveEdit} style={st.btn}>Enregistrer les modifications</button>
+            <button onClick={()=>setShowEdit(false)} style={{ ...st.btnSm, padding:"9px 16px" }}>Annuler</button>
+          </div>
+        </div>
+      )}
+
+      <div style={{ display:"flex", gap:8, marginBottom:20 }}>
+        {[2024,2025,2026,2027].map(y => (
+          <button key={y} onClick={()=>setYear(y)} style={{ padding:"6px 14px", borderRadius:7, border:"1px solid "+(year===y?"#1a1a2e":"#e5e7eb"), background:year===y?"#1a1a2e":"white", color:year===y?"white":"#6b7280", cursor:"pointer", fontSize:13, fontWeight:year===y?500:400 }}>{y}</button>
         ))}
       </div>
 
-      <div style={s.kpiRow}>
-        <div style={s.kpi}>
-          <div style={s.kpiLbl}>Revenus bruts</div>
-          <div style={s.kpiVal("#2ecc71")}>{fmt(totalStats.revenue)} MAD</div>
-          <div style={{ fontSize: 11, color: "#aaa", marginTop: 4 }}>{yearBookings.length} résa · {totalStats.nights} nuits</div>
-        </div>
-        {totalStats.platformFee > 0 && (
-          <div style={s.kpi}>
-            <div style={s.kpiLbl}>Commission plateforme</div>
-            <div style={s.kpiVal("#e74c3c")}>− {fmt(totalStats.platformFee)} MAD</div>
-            <div style={{ fontSize: 11, color: "#aaa", marginTop: 4 }}>{property.commissionRules?.platformFeeRate}%</div>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,minmax(0,1fr))", gap:10, marginBottom:20 }}>
+        {[
+          { label:"Revenus bruts", value:`${fmt(totals.revenue)} MAD`, sub:`${yearBookings.length} résa · ${totals.nights} nuits`, color:"#1D9E75" },
+          totals.platformFee>0 && { label:"Comm. plateforme", value:`− ${fmt(totals.platformFee)} MAD`, sub:`${property.commissionRules?.platformFeeRate}%`, color:"#E24B4A" },
+          { label:"Ma commission", value:`+ ${fmt(totals.commission)} MAD`, sub:commissionLabel(property), color:"#f0a500" },
+          { label:"Reversement propriétaire", value:`${fmt(totals.reversement)} MAD`, sub:"net à reverser", color:"#378ADD" },
+        ].filter(Boolean).map((k,i) => (
+          <div key={i} style={{ background:"#f8f9fa", borderRadius:12, padding:"14px 16px" }}>
+            <div style={{ fontSize:11, color:"#9ca3af", textTransform:"uppercase", letterSpacing:".4px", marginBottom:6 }}>{k.label}</div>
+            <div style={{ fontSize:20, fontWeight:600, color:k.color, lineHeight:1 }}>{k.value}</div>
+            <div style={{ fontSize:11, color:"#9ca3af", marginTop:5 }}>{k.sub}</div>
           </div>
-        )}
-        <div style={s.kpi}>
-          <div style={s.kpiLbl}>Ma commission</div>
-          <div style={s.kpiVal("#f0c040")}>+ {fmt(totalStats.commission)} MAD</div>
-          <div style={{ fontSize: 11, color: "#aaa", marginTop: 4 }}>{commissionLabel(property)}</div>
-        </div>
-        {totalStats.cleaning > 0 && (
-          <div style={s.kpi}>
-            <div style={s.kpiLbl}>Frais ménage</div>
-            <div style={s.kpiVal("#e67e22")}>− {fmt(totalStats.cleaning)} MAD</div>
-          </div>
-        )}
-        <div style={s.kpi}>
-          <div style={s.kpiLbl}>Reversement propriétaire</div>
-          <div style={s.kpiVal("#3498db")}>{fmt(totalStats.reversement)} MAD</div>
-          <div style={{ fontSize: 11, color: "#aaa", marginTop: 4 }}>net à reverser</div>
-        </div>
+        ))}
       </div>
 
-      <div style={s.row2}>
-        <div style={s.card}>
-          <div style={s.cardHd}>Revenus par mois — {year}</div>
-          <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 80 }}>
-            {monthlyRevenue.map((v, i) => (
-              <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
-                <div style={{ width: "100%", background: v > 0 ? "#1D9E75" : "#f0f0f0", borderRadius: "3px 3px 0 0", height: Math.round((v / maxMonth) * 64) + "px", minHeight: v > 0 ? 4 : 0, transition: "height .2s" }} />
-                <div style={{ fontSize: 9, color: "#aaa" }}>{MONTHS[i]}</div>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:16 }}>
+        <div style={st.card}>
+          <div style={st.cardHd}>Revenus par mois — {year}</div>
+          <div style={{ display:"flex", alignItems:"flex-end", gap:3, height:80 }}>
+            {monthlyRevenue.map((v,i) => (
+              <div key={i} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:3 }}>
+                <div style={{ width:"100%", background:v>0?"#1D9E75":"#f0f0f0", borderRadius:"3px 3px 0 0", height:Math.round((v/maxMonth)*64)+"px", minHeight:v>0?4:0 }}/>
+                <div style={{ fontSize:9, color:"#c0c0c0" }}>{MONTHS[i]}</div>
               </div>
             ))}
           </div>
         </div>
 
-        <div style={s.card}>
-          <div style={s.cardHd}>Détail commission — exemple calcul</div>
-          {yearBookings.slice(0, 1).map(b => {
+        <div style={st.card}>
+          <div style={st.cardHd}>Détail commission — exemple calcul</div>
+          {yearBookings.slice(0,1).map(b => {
             const c = calcCommission(b, property);
             return (
-              <div key={b.id} style={{ fontSize: 13 }}>
-                <div style={{ color: "#888", marginBottom: 8, fontSize: 12 }}>Exemple : {b.name} — {b.platform}</div>
-                <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", borderBottom: "1px solid #f5f5f5" }}>
-                  <span style={{ color: "#666" }}>Montant encaissé</span><span style={{ fontWeight: 500 }}>{fmt(b.amount)} MAD</span>
-                </div>
-                {c.platformFee > 0 && <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", borderBottom: "1px solid #f5f5f5" }}>
-                  <span style={{ color: "#e74c3c" }}>− Commission {b.platform}</span><span style={{ color: "#e74c3c" }}>− {fmt(c.platformFee)} MAD</span>
-                </div>}
-                <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", borderBottom: "1px solid #f5f5f5" }}>
-                  <span style={{ color: "#f0a500" }}>− Ma commission</span><span style={{ color: "#f0a500" }}>− {fmt(c.commission)} MAD</span>
-                </div>
-                {c.cleaning > 0 && <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", borderBottom: "1px solid #f5f5f5" }}>
-                  <span style={{ color: "#e67e22" }}>− Frais ménage</span><span style={{ color: "#e67e22" }}>− {fmt(c.cleaning)} MAD</span>
-                </div>}
-                <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", marginTop: 4 }}>
-                  <span style={{ fontWeight: 500, color: "#3498db" }}>= Reversement</span><span style={{ fontWeight: 500, color: "#3498db" }}>{fmt(c.reversement)} MAD</span>
-                </div>
+              <div key={b.id} style={{ fontSize:13 }}>
+                <div style={{ color:"#9ca3af", marginBottom:8, fontSize:12 }}>Exemple : {b.name} — {b.platform}</div>
+                {[
+                  { label:"Montant encaissé", value:`${fmt(b.amount)} MAD`, color:"#374151" },
+                  c.platformFee>0 && { label:`− Commission ${b.platform}`, value:`− ${fmt(c.platformFee)} MAD`, color:"#E24B4A" },
+                  { label:"− Ma commission", value:`− ${fmt(c.commission)} MAD`, color:"#f0a500" },
+                  c.cleaning>0 && { label:"− Frais ménage", value:`− ${fmt(c.cleaning)} MAD`, color:"#e67e22" },
+                  { label:"= Reversement", value:`${fmt(c.reversement)} MAD`, color:"#378ADD", bold:true },
+                ].filter(Boolean).map((row,i) => (
+                  <div key={i} style={{ display:"flex", justifyContent:"space-between", padding:"5px 0", borderBottom:"1px solid #f5f5f5" }}>
+                    <span style={{ color:row.color, fontWeight:row.bold?600:400 }}>{row.label}</span>
+                    <span style={{ color:row.color, fontWeight:row.bold?600:400 }}>{row.value}</span>
+                  </div>
+                ))}
               </div>
             );
           })}
-          {yearBookings.length === 0 && <p style={{ color: "#aaa", fontSize: 13 }}>Aucune réservation cette année.</p>}
+          {yearBookings.length===0 && <p style={{ color:"#c0c0c0", fontSize:13 }}>Aucune réservation cette année.</p>}
         </div>
       </div>
 
-      <div style={s.card}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <div style={s.cardHd}>Réservations {year}</div>
-          <button style={s.btn} onClick={() => openForm()}>+ Ajouter</button>
+      <div style={st.card}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
+          <div style={st.cardHd}>Réservations {year}</div>
+          <button style={st.btn} onClick={()=>openForm()}>+ Ajouter</button>
         </div>
 
         {showForm && (
-          <div style={{ background: "#f9f9f9", borderRadius: 10, padding: 20, marginBottom: 20, border: "1px solid #eee" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 10, marginBottom: 10 }}>
+          <div style={{ background:"#f9fafb", borderRadius:10, padding:20, marginBottom:20, border:"1px solid #f0f0f0" }}>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr 1fr", gap:10, marginBottom:10 }}>
+              {[["name","Voyageur","text","Prénom"],["checkIn","Arrivée","date",""],["checkOut","Départ","date",""],["amount","Montant (MAD)","number","0"]].map(([key,label,type,ph]) => (
+                <div key={key}>
+                  <label style={st.label}>{label}</label>
+                  <input type={type} style={st.input} value={form[key]} onChange={e=>setForm({...form,[key]:e.target.value})} placeholder={ph}/>
+                </div>
+              ))}
               <div>
-                <label style={s.label}>Voyageur</label>
-                <input style={s.input} value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Prénom" />
-              </div>
-              <div>
-                <label style={s.label}>Plateforme</label>
-                <select style={s.select} value={form.platform} onChange={e => setForm({ ...form, platform: e.target.value })}>
-                  {PLATFORMS.map(p => <option key={p}>{p}</option>)}
+                <label style={st.label}>Plateforme</label>
+                <select style={st.input} value={form.platform} onChange={e=>setForm({...form,platform:e.target.value})}>
+                  {PLATFORMS.map(p=><option key={p}>{p}</option>)}
                 </select>
               </div>
               <div>
-                <label style={s.label}>Arrivée</label>
-                <input type="date" style={s.input} value={form.checkIn} onChange={e => setForm({ ...form, checkIn: e.target.value })} />
+                <label style={st.label}>Voyageurs</label>
+                <input type="number" style={st.input} value={form.guests} onChange={e=>setForm({...form,guests:e.target.value})} placeholder="2"/>
               </div>
               <div>
-                <label style={s.label}>Départ</label>
-                <input type="date" style={s.input} value={form.checkOut} onChange={e => setForm({ ...form, checkOut: e.target.value })} />
+                <label style={st.label}>Notes</label>
+                <input style={st.input} value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})} placeholder="..."/>
               </div>
-              <div>
-                <label style={s.label}>Montant (MAD)</label>
-                <input type="number" style={s.input} value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} placeholder="0" />
-              </div>
-              <div>
-                <label style={s.label}>Voyageurs</label>
-                <input type="number" style={s.input} value={form.guests} onChange={e => setForm({ ...form, guests: e.target.value })} placeholder="2" />
-              </div>
-              <div>
-                <label style={s.label}>Notes</label>
-                <input style={s.input} value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="..." />
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, paddingTop: 18 }}>
-                <input type="checkbox" id="paid" checked={form.paid} onChange={e => setForm({ ...form, paid: e.target.checked })} />
-                <label htmlFor="paid" style={{ fontSize: 13, color: "#666" }}>Encaissé</label>
+              <div style={{ display:"flex", alignItems:"center", gap:8, paddingTop:20 }}>
+                <input type="checkbox" id="paid" checked={form.paid} onChange={e=>setForm({...form,paid:e.target.checked})} style={{ width:16,height:16 }}/>
+                <label htmlFor="paid" style={{ fontSize:13, color:"#374151", cursor:"pointer" }}>Encaissé</label>
               </div>
             </div>
-            {form.checkIn && form.checkOut && form.amount && (
-              <div style={{ background: "#eaf6ff", borderRadius: 8, padding: "10px 14px", marginBottom: 12, fontSize: 13 }}>
-                {(() => {
-                  const preview = calcCommission({ ...form, nights: nights(form.checkIn, form.checkOut), amount: Number(form.amount) }, property);
-                  return (
-                    <span>
-                      {nights(form.checkIn, form.checkOut)} nuits ·
-                      {preview.platformFee > 0 ? ` Plateforme : −${fmt(preview.platformFee)} MAD ·` : ""}
-                      {" "}Ma commission : <strong>{fmt(preview.commission)} MAD</strong> ·
-                      Reversement : <strong style={{ color: "#3498db" }}>{fmt(preview.reversement)} MAD</strong>
-                    </span>
-                  );
-                })()}
-              </div>
-            )}
-            <div style={{ display: "flex", gap: 8 }}>
-              <button style={s.btn} onClick={saveBooking}>{editId ? "Mettre à jour" : "Enregistrer"}</button>
-              <button style={{ ...s.btnSm, padding: "9px 16px" }} onClick={() => { setShowForm(false); setEditId(null); }}>Annuler</button>
+            {form.checkIn&&form.checkOut&&form.amount && (()=>{
+              const preview = calcCommission({...form, nights:nights(form.checkIn,form.checkOut), amount:Number(form.amount)}, property);
+              return (
+                <div style={{ background:"#E6F1FB", borderRadius:8, padding:"10px 14px", marginBottom:12, fontSize:13, color:"#0C447C" }}>
+                  {nights(form.checkIn,form.checkOut)} nuits · Ma commission : <strong>{fmt(preview.commission)} MAD</strong> · Reversement : <strong>{fmt(preview.reversement)} MAD</strong>
+                </div>
+              );
+            })()}
+            <div style={{ display:"flex", gap:8 }}>
+              <button style={st.btn} onClick={saveBooking}>{editId?"Mettre à jour":"Enregistrer"}</button>
+              <button style={{ ...st.btnSm, padding:"9px 16px" }} onClick={()=>{setShowForm(false);setEditId(null);}}>Annuler</button>
             </div>
           </div>
         )}
 
-        {yearBookings.length === 0 && !showForm && <p style={{ color: "#aaa", fontSize: 13 }}>Aucune réservation pour {year}.</p>}
+        {yearBookings.length===0&&!showForm && <p style={{ color:"#c0c0c0", fontSize:13, textAlign:"center", padding:"20px 0" }}>Aucune réservation pour {year}.</p>}
 
-        {yearBookings.sort((a, b) => a.checkIn > b.checkIn ? 1 : -1).map(b => {
+        {yearBookings.sort((a,b)=>a.checkIn>b.checkIn?1:-1).map(b => {
           const c = calcCommission(b, property);
-          const plt = PLT_COLORS[b.platform] || PLT_COLORS["Autre"];
-          const n = b.nights || nights(b.checkIn, b.checkOut);
+          const plt = PLT[b.platform]||PLT["Autre"];
+          const n = b.nights||nights(b.checkIn,b.checkOut);
           return (
-            <div key={b.id} style={s.brow}>
-              <div style={{ width: 28, height: 28, borderRadius: "50%", background: plt.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <span style={{ fontSize: 10, fontWeight: 600, color: plt.color }}>{(b.name || "?").charAt(0).toUpperCase()}</span>
+            <div key={b.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 0", borderBottom:"1px solid #f7f7f7" }}>
+              <div style={{ width:30, height:30, borderRadius:"50%", background:plt.bg, color:plt.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:600, flexShrink:0 }}>{(b.name||"?")[0].toUpperCase()}</div>
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontSize:13, fontWeight:500, color:"#1a1a2e" }}>{b.name||"—"}</div>
+                <div style={{ fontSize:11, color:"#9ca3af", marginTop:1 }}>{b.checkIn} → {b.checkOut} · {n} nuit{n>1?"s":""} · {b.guests||"?"} pers.</div>
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 500 }}>{b.name || "—"}</div>
-                <div style={{ fontSize: 11, color: "#aaa" }}>{b.checkIn} → {b.checkOut} · {n} nuit{n > 1 ? "s" : ""} · {b.guests || "?"} pers.</div>
+              <span style={{ fontSize:10, background:plt.bg, color:plt.color, padding:"2px 8px", borderRadius:99, fontWeight:500 }}>{b.platform}</span>
+              <div style={{ textAlign:"right", minWidth:110 }}>
+                <div style={{ fontSize:13, fontWeight:600 }}>{fmt(b.amount)} MAD</div>
+                <div style={{ fontSize:11, color:"#378ADD" }}>→ {fmt(c.reversement)} MAD</div>
               </div>
-              <span style={{ ...s.badge(plt.bg, plt.color), fontSize: 11 }}>{b.platform}</span>
-              <div style={{ textAlign: "right", minWidth: 120 }}>
-                <div style={{ fontSize: 13, fontWeight: 500 }}>{fmt(b.amount)} MAD</div>
-                <div style={{ fontSize: 11, color: "#3498db" }}>→ {fmt(c.reversement)} MAD</div>
-              </div>
-              <button onClick={() => togglePaid(b)} style={{ ...s.btnSm, background: b.paid ? "#eaf7f0" : "white", color: b.paid ? "#1a7a44" : "#999", minWidth: 80 }}>
-                {b.paid ? "Encaissé" : "Non payé"}
-              </button>
-              <button style={s.btnSm} onClick={() => openForm(b)}>Éditer</button>
-              <button style={{ ...s.btnSm, color: "#e74c3c", borderColor: "#fdd" }} onClick={() => deleteBooking(b.id)}>Suppr.</button>
+              <button onClick={()=>togglePaid(b)} style={{ ...st.btnSm, background:b.paid?"#E1F5EE":"white", color:b.paid?"#085041":"#9ca3af", minWidth:90, fontWeight:b.paid?500:400 }}>{b.paid?"Encaissé":"Non payé"}</button>
+              <button style={st.btnSm} onClick={()=>openForm(b)}>Éditer</button>
+              <button style={{ ...st.btnSm, color:"#E24B4A", borderColor:"#FAECE7" }} onClick={()=>deleteBooking(b.id)}>Suppr.</button>
             </div>
           );
         })}
 
-        {yearBookings.length > 0 && (
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: 24, padding: "12px 0 0", fontSize: 13, borderTop: "1px solid #f0f0f0", marginTop: 8 }}>
-            <span style={{ color: "#888" }}>Total : <strong style={{ color: "#2ecc71" }}>{fmt(totalStats.revenue)} MAD</strong></span>
-            <span style={{ color: "#888" }}>Commission : <strong style={{ color: "#f0a500" }}>{fmt(totalStats.commission)} MAD</strong></span>
-            <span style={{ color: "#888" }}>À reverser : <strong style={{ color: "#3498db" }}>{fmt(totalStats.reversement)} MAD</strong></span>
+        {yearBookings.length>0 && (
+          <div style={{ display:"flex", justifyContent:"flex-end", gap:24, padding:"12px 0 0", fontSize:13, borderTop:"1px solid #f0f0f0", marginTop:8 }}>
+            <span style={{ color:"#9ca3af" }}>Total : <strong style={{ color:"#1D9E75" }}>{fmt(totals.revenue)} MAD</strong></span>
+            <span style={{ color:"#9ca3af" }}>Commission : <strong style={{ color:"#f0a500" }}>{fmt(totals.commission)} MAD</strong></span>
+            <span style={{ color:"#9ca3af" }}>À reverser : <strong style={{ color:"#378ADD" }}>{fmt(totals.reversement)} MAD</strong></span>
           </div>
         )}
       </div>
