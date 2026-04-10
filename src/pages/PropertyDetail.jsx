@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { collection, getDocs, addDoc, deleteDoc, updateDoc, doc, query, where } from "firebase/firestore";
 import { db } from "../firebase";
 import { calcCommission, commissionLabel } from "./Properties";
+import { syncPropertyICal } from "./useICalSync";
+import ICalSync from "./ICalSync";
 
 const PLATFORMS = ["Airbnb", "Booking", "Direct", "Gens de confiance", "Autre"];
 const MONTHS = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
@@ -99,6 +101,9 @@ export default function PropertyDetail() {
   const [form, setForm]           = useState(emptyBooking);
   const [editId, setEditId]       = useState(null);
   const [loading, setLoading]     = useState(true);
+  const [syncing, setSyncing]     = useState(false);
+  const [syncMsg, setSyncMsg]     = useState("");
+  const [syncResult, setSyncResult] = useState(null);
 
   const load = async () => {
     const [pSnap, bSnap] = await Promise.all([
@@ -164,6 +169,18 @@ export default function PropertyDetail() {
     await updateDoc(doc(db,"bookings",b.id), {paid:!b.paid}); load();
   };
 
+  const handleSync = async () => {
+    if (!property) return;
+    setSyncing(true); setSyncResult(null); setSyncMsg("Synchronisation...");
+    try {
+      const r = await syncPropertyICal(property, msg => setSyncMsg(msg));
+      setSyncResult(r);
+      setSyncMsg("");
+      load();
+    } catch(e) { setSyncMsg("Erreur: "+e.message); }
+    setSyncing(false);
+  };
+
   if (loading) return <div style={{ display:"flex",alignItems:"center",justifyContent:"center",height:"100vh",color:"#9ca3af" }}>Chargement...</div>;
   if (!property) return <div style={{ padding:32, color:"#9ca3af" }}>Propriété introuvable.</div>;
 
@@ -189,12 +206,28 @@ export default function PropertyDetail() {
         </div>
         <div style={{ display:"flex", gap:10, alignItems:"center" }}>
           <span style={{ background:"#f0c04028", color:"#b8860b", fontSize:12, fontWeight:600, padding:"4px 12px", borderRadius:99 }}>{commissionLabel(property)}</span>
+          <ICalSync property={property} onSynced={load}/>
+          <button onClick={handleSync} disabled={syncing} style={{display:"flex",alignItems:"center",gap:6,background:syncing?"#f5f5f5":"#E1F5EE",color:syncing?"#9ca3af":"#085041",border:"1px solid #9FE1CB",padding:"8px 16px",borderRadius:9,cursor:syncing?"not-allowed":"pointer",fontSize:13,fontWeight:500}}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+            {syncing ? syncMsg||"Sync..." : "Sync iCal"}
+          </button>
           <button onClick={()=>setShowEdit(!showEdit)} style={{ display:"flex", alignItems:"center", gap:6, background:"white", border:"1px solid #e5e7eb", color:"#374151", padding:"8px 16px", borderRadius:9, cursor:"pointer", fontSize:13, fontWeight:500, boxShadow:"0 1px 3px rgba(0,0,0,.06)" }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             Modifier la fiche
           </button>
         </div>
       </div>
+
+      {syncResult && (
+        <div style={{background:"#E1F5EE",border:"1px solid #9FE1CB",borderRadius:10,padding:"12px 16px",marginBottom:16,fontSize:13}}>
+          <strong style={{color:"#085041"}}>Sync terminée — </strong>
+          <span style={{color:"#0F6E56"}}>{syncResult.added} ajoutée{syncResult.added>1?"s":""}</span>
+          {syncResult.updated>0 && <span style={{color:"#854F0B"}}> · {syncResult.updated} mise{syncResult.updated>1?"s":""} à jour</span>}
+          {syncResult.blocked>0 && <span style={{color:"#888"}}> · {syncResult.blocked} bloquée{syncResult.blocked>1?"s":""} ignorée{syncResult.blocked>1?"s":""}</span>}
+          {syncResult.errors.length>0 && <span style={{color:"#A32D2D"}}> · {syncResult.errors[0]}</span>}
+          <button onClick={()=>setSyncResult(null)} style={{marginLeft:12,background:"none",border:"none",color:"#085041",cursor:"pointer",fontSize:12}}>×</button>
+        </div>
+      )}
 
       {showEdit && editForm && (
         <div style={{ background:"white", borderRadius:14, padding:28, marginBottom:24, border:"1px solid #f0f0f0", boxShadow:"0 4px 16px rgba(0,0,0,.06)" }}>

@@ -3,6 +3,7 @@ import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import { calcCommission } from "./Properties";
+import { syncAllProperties } from "./useICalSync";
 
 const MONTHS = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
 const DAYS   = ["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
@@ -65,6 +66,9 @@ export default function Dashboard() {
   const [properties, setProperties] = useState([]);
   const [bookings, setBookings]     = useState([]);
   const [loading, setLoading]       = useState(true);
+  const [syncing, setSyncing]       = useState(false);
+  const [syncMsg, setSyncMsg]       = useState("");
+  const [syncResult, setSyncResult] = useState(null);
   const navigate = useNavigate();
 
   const today    = getToday();
@@ -112,6 +116,19 @@ export default function Dashboard() {
   };
   const shortName = name => name.length>10 ? name.substring(0,9)+"…" : name;
   const occCell = s => ({busy:{bg:"#E1F5EE",color:"#085041",border:"#9FE1CB"},perso:{bg:"#EEEDFE",color:"#3C3489",border:"#CECBF6"},free:{bg:"#f5f5f5",color:"#c0c0c0",border:"#e8e8e8"}}[s]||{bg:"#f5f5f5",color:"#c0c0c0",border:"#e8e8e8"});
+  const handleSync = async () => {
+    setSyncing(true); setSyncResult(null); setSyncMsg("Initialisation...");
+    try {
+      const r = await syncAllProperties(properties, msg => setSyncMsg(msg));
+      setSyncResult(r);
+      setSyncMsg("");
+      const [pSnap, bSnap] = await Promise.all([getDocs(collection(db,"properties")), getDocs(collection(db,"bookings"))]);
+      setProperties(pSnap.docs.map(d => ({id:d.id,...d.data()})));
+      setBookings(bSnap.docs.map(d => ({id:d.id,...d.data()})));
+    } catch(e) { setSyncMsg("Erreur: "+e.message); }
+    setSyncing(false);
+  };
+
   const greet = now.getHours()<12?"Bonjour":now.getHours()<18?"Bon après-midi":"Bonsoir";
 
   const card  = {background:"#fff",border:"1px solid #f0f0f0",borderRadius:14,padding:20,boxShadow:"0 1px 4px rgba(0,0,0,.05)"};
@@ -128,10 +145,24 @@ export default function Dashboard() {
           <h1 style={{fontSize:22,fontWeight:600,color:"#1a1a2e",marginBottom:3}}>{greet} !</h1>
           <div style={{fontSize:13,color:"#9ca3af"}}>{DAYS[now.getDay()]} {now.getDate()} {MONTHS[now.getMonth()]} {now.getFullYear()} · {properties.length} biens sous gestion</div>
         </div>
-        {(checkinsToday.length>0||checkoutsToday.length>0) && (
-          <div style={{display:"flex",gap:8}}>
-            {checkinsToday.length>0 && <div style={{background:"#E1F5EE",color:"#085041",fontSize:13,fontWeight:500,padding:"8px 16px",borderRadius:99,border:"1px solid #9FE1CB"}}>{checkinsToday.length} arrivée{checkinsToday.length>1?"s":""} aujourd'hui</div>}
-            {checkoutsToday.length>0 && <div style={{background:"#F1EFE8",color:"#5F5E5A",fontSize:13,fontWeight:500,padding:"8px 16px",borderRadius:99,border:"1px solid #D3D1C7"}}>{checkoutsToday.length} départ{checkoutsToday.length>1?"s":""} aujourd'hui</div>}
+        <div style={{display:"flex",gap:8,alignItems:"center"}}>
+          {checkinsToday.length>0 && <div style={{background:"#E1F5EE",color:"#085041",fontSize:13,fontWeight:500,padding:"8px 16px",borderRadius:99,border:"1px solid #9FE1CB"}}>{checkinsToday.length} arrivée{checkinsToday.length>1?"s":""} aujourd'hui</div>}
+          {checkoutsToday.length>0 && <div style={{background:"#F1EFE8",color:"#5F5E5A",fontSize:13,fontWeight:500,padding:"8px 16px",borderRadius:99,border:"1px solid #D3D1C7"}}>{checkoutsToday.length} départ{checkoutsToday.length>1?"s":""} aujourd'hui</div>}
+          <button onClick={handleSync} disabled={syncing} style={{display:"flex",alignItems:"center",gap:7,background:syncing?"#f5f5f5":"#1a1a2e",color:syncing?"#9ca3af":"white",border:"none",padding:"8px 16px",borderRadius:99,cursor:syncing?"not-allowed":"pointer",fontSize:13,fontWeight:500,transition:"all .15s"}}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" style={{animation:syncing?"spin 1s linear infinite":"none"}}>
+              <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+            </svg>
+            {syncing ? syncMsg||"Sync..." : "Synchroniser iCal"}
+          </button>
+        </div>
+        {syncResult && (
+          <div style={{position:"fixed",bottom:24,right:24,background:"#1a1a2e",color:"white",padding:"14px 20px",borderRadius:12,fontSize:13,boxShadow:"0 8px 24px rgba(0,0,0,.2)",zIndex:1000,maxWidth:320}}>
+            <div style={{fontWeight:600,marginBottom:6}}>Synchronisation terminée</div>
+            <div style={{color:"#9FE1CB"}}>+{syncResult.added} nouvelle{syncResult.added>1?"s":""} réservation{syncResult.added>1?"s":""}</div>
+            {syncResult.updated>0 && <div style={{color:"#f0c040"}}>{syncResult.updated} mise{syncResult.updated>1?"s":""} à jour</div>}
+            {syncResult.blocked>0 && <div style={{color:"#888"}}>{syncResult.blocked} période{syncResult.blocked>1?"s":""} bloquée{syncResult.blocked>1?"s":""} ignorée{syncResult.blocked>1?"s":""}</div>}
+            {syncResult.errors.length>0 && <div style={{color:"#E24B4A",marginTop:4}}>{syncResult.errors[0]}</div>}
+            <button onClick={()=>setSyncResult(null)} style={{marginTop:10,background:"none",border:"1px solid #ffffff30",color:"white",padding:"4px 12px",borderRadius:6,cursor:"pointer",fontSize:12}}>Fermer</button>
           </div>
         )}
       </div>
