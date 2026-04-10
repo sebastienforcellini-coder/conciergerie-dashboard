@@ -52,11 +52,8 @@ export default function App() {
   return (
     <div className="app-layout">
       <nav className="app-sidebar">
-        <div className="sidebar-logo" style={{ padding:"20px 16px 20px", borderBottom:"1px solid #ffffff0e" }}>
-          <div style={{ padding:"4px 0" }}>
-            <div style={{ fontFamily:"Georgia,'Times New Roman',serif", fontSize:17, fontWeight:400, color:"white", letterSpacing:"3px", opacity:.95 }}>YOU FIRST.</div>
-            <div style={{ fontFamily:"Georgia,'Times New Roman',serif", fontSize:10, color:"white", letterSpacing:"1.5px", opacity:.5, marginTop:3 }}>Everything, handled.</div>
-          </div>
+        <div className="sidebar-logo" style={{ padding:"16px", borderBottom:"1px solid #ffffff0e", background:"#f5f0eb" }}>
+          <img src="/favicon.svg" alt="You First" style={{ width:"100%", maxWidth:180, display:"block", margin:"0 auto" }}/>
         </div>
 
         <div style={{ flex:1, padding:"8px 8px" }}>
