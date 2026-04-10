@@ -53,7 +53,10 @@ export default function App() {
     <div className="app-layout">
       <nav className="app-sidebar">
         <div className="sidebar-logo" style={{ padding:"20px 16px 20px", borderBottom:"1px solid #ffffff0e" }}>
-          <img src="/logo-white.png" alt="You First" style={{ width:"100%", maxWidth:170, display:"block", opacity:.95 }}/>
+          <svg viewBox="0 0 200 52" xmlns="http://www.w3.org/2000/svg" style={{ width:"100%", maxWidth:180 }}>
+            <text x="4" y="30" fontFamily="Georgia, 'Times New Roman', serif" fontSize="26" fontWeight="400" fill="white" letterSpacing="3" opacity="0.95">YOU FIRST.</text>
+            <text x="5" y="46" fontFamily="Georgia, 'Times New Roman', serif" fontSize="11" fontWeight="400" fill="white" letterSpacing="1.5" opacity="0.55">Everything, handled.</text>
+          </svg>
         </div>
 
         <div style={{ flex:1, padding:"8px 8px" }}>
@@ -62,9 +65,9 @@ export default function App() {
               className="nav-item"
               style={({ isActive }) => ({
                 display:"flex", alignItems:"center", gap:10,
-                padding:"10px 12px", borderRadius:8, marginBottom:2,
+                padding:"11px 14px", borderRadius:8, marginBottom:2,
                 color: isActive ? "#f0c040" : "#ffffffcc",
-                textDecoration:"none", fontSize:13,
+                textDecoration:"none", fontSize:14,
                 fontWeight: isActive ? 500 : 400,
                 background: isActive ? "#ffffff12" : "transparent",
                 transition:"background .15s, color .15s",
@@ -88,7 +91,10 @@ export default function App() {
 
       <main className="app-main">
         <div className="mobile-header" style={{ display:"none" }}>
-          <img src="/logo-white.png" alt="You First" style={{ height:36, objectFit:"contain", opacity:.95 }}/>
+          <svg viewBox="0 0 200 52" xmlns="http://www.w3.org/2000/svg" style={{ height:40 }}>
+            <text x="4" y="30" fontFamily="Georgia, 'Times New Roman', serif" fontSize="26" fontWeight="400" fill="white" letterSpacing="3" opacity="0.95">YOU FIRST.</text>
+            <text x="5" y="46" fontFamily="Georgia, 'Times New Roman', serif" fontSize="11" fontWeight="400" fill="white" letterSpacing="1.5" opacity="0.55">Everything, handled.</text>
+          </svg>
         </div>
         <PageWrapper>
           <Routes>
