@@ -135,7 +135,12 @@ export default function Dashboard() {
   const cardHd= {fontSize:11,fontWeight:600,color:"#9ca3af",textTransform:"uppercase",letterSpacing:".5px",marginBottom:14};
   const brow  = {display:"flex",alignItems:"flex-start",gap:10,padding:"9px 0",borderBottom:"1px solid #f7f7f7"};
 
-  if (loading) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100vh",color:"#9ca3af"}}>Chargement...</div>;
+  if (loading) return (
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100vh",gap:24,background:"#f4f5f7"}}>
+      <img src="/logo.png" alt="You First" style={{width:"min(280px,70vw)",opacity:.8}}/>
+      <div style={{fontSize:13,color:"#9ca3af"}}>Chargement...</div>
+    </div>
+  );
 
   return (
     <div className="page">

@@ -32,23 +32,32 @@ function PageWrapper({ children }) {
 
 export default function App() {
   const [propCount, setPropCount] = useState("—");
+  const [splash, setSplash]         = useState(true);
+
+  useEffect(() => {
+    const t = setTimeout(() => setSplash(false), 2000);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     getDocs(collection(db,"properties")).then(snap => setPropCount(snap.size));
   }, []);
 
+  if (splash) return (
+    <div style={{ position:"fixed", inset:0, background:"#f5f0eb", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", zIndex:9999, animation:"fadeIn .3s ease-out" }}>
+      <img src="/logo.png" alt="You First. Everything, handled." style={{ width:"min(400px, 80vw)", opacity:1 }}/>
+    </div>
+  );
+
   return (
     <div className="app-layout">
       <nav className="app-sidebar">
         <div className="sidebar-logo" style={{ padding:"20px 16px 16px", display:"flex", alignItems:"center", gap:10, borderBottom:"1px solid #ffffff0e" }}>
-          <div style={{ width:36, height:36, borderRadius:10, flexShrink:0, background:"linear-gradient(135deg, #f0c040 0%, #e8a020 100%)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1a1a2e" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/>
-            </svg>
+          <div style={{ width:36, height:36, borderRadius:10, flexShrink:0, background:"linear-gradient(135deg, #f0c040 0%, #e8a020 100%)", display:"flex", alignItems:"center", justifyContent:"center", overflow:"hidden" }}>
+            <img src="/logo.png" alt="Logo" style={{ width:32, height:32, objectFit:"cover", filter:"brightness(0)", opacity:.7 }}/>
           </div>
-          <div className="sidebar-logo-text">
-            <div style={{ fontSize:14, fontWeight:600, color:"#fff", letterSpacing:"-.2px" }}>Conciergerie</div>
-            <div style={{ fontSize:11, color:"#ffffff50", marginTop:1 }}>Marrakech</div>
+          <div className="sidebar-logo-text" style={{ flex:1 }}>
+            <img src="/logo.png" alt="You First" style={{ height:28, filter:"brightness(0) invert(1)", opacity:.9, maxWidth:140, objectFit:"contain" }}/>
           </div>
         </div>
 
