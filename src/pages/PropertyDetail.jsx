@@ -27,6 +27,11 @@ const emptyBooking = { name:"", platform:"Airbnb", checkIn:"", checkOut:"", amou
 
 function nights(a,b) { if(!a||!b) return 0; return Math.max(0,Math.round((new Date(b)-new Date(a))/86400000)); }
 function fmt(n) { return Math.round(n).toLocaleString("fr-FR"); }
+function fmtDate(d) {
+  if (!d) return "—";
+  const [y,m,j] = d.split("-");
+  return `${j}/${m}/${y}`;
+}
 
 const st = {
   input:  { padding:"9px 11px", borderRadius:8, border:"1px solid #e5e7eb", fontSize:13, width:"100%", boxSizing:"border-box" },
@@ -406,7 +411,7 @@ export default function PropertyDetail() {
                     {isIncomplete && <span style={{ fontSize:10, background:"#FAEEDA", color:"#854F0B", padding:"1px 7px", borderRadius:99, fontWeight:600 }}>À compléter</span>}
                     {b.fromICal && !isIncomplete && <span style={{ fontSize:10, background:"#E1F5EE", color:"#085041", padding:"1px 7px", borderRadius:99 }}>iCal</span>}
                   </div>
-                  <div style={{ fontSize:11, color:"#9ca3af", marginTop:1 }}>{b.checkIn} → {b.checkOut} · {n} nuit{n>1?"s":""} · {b.guests||"?"} pers.</div>
+                  <div style={{ fontSize:11, color:"#9ca3af", marginTop:1 }}>{fmtDate(b.checkIn)} → {fmtDate(b.checkOut)} · {n} nuit{n>1?"s":""} · {b.guests||"?"} pers.</div>
                 </div>
                 <span style={{ fontSize:10, background:plt.bg, color:plt.color, padding:"2px 8px", borderRadius:99, fontWeight:500 }}>{b.platform}</span>
                 <div style={{ textAlign:"right", minWidth:110 }}>
