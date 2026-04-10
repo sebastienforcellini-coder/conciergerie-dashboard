@@ -87,10 +87,10 @@ export default function Calendar() {
           <span style={{ fontWeight:600, fontSize:15, color:"#1a1a2e", minWidth:140, textAlign:"center" }}>{MONTHS[month]} {year}</span>
           <button onClick={next} style={{ background:"none", border:"none", cursor:"pointer", padding:"4px 10px", borderRadius:7, color:"#6b7280", fontSize:18, lineHeight:1 }}>›</button>
         </div>
-        <div style={{ display:"flex", gap:14, marginLeft:8 }}>
+        <div style={{ display:"flex", gap:10, flexWrap:"wrap", marginLeft:8 }}>
           {Object.entries(PLT_COLORS).filter(([k])=>k!=="Autre"&&k!=="Perso").map(([platform,c]) => (
-            <span key={platform} style={{ display:"flex", alignItems:"center", gap:5, fontSize:12, color:"#6b7280" }}>
-              <span style={{ width:10, height:10, borderRadius:2, background:c.bg, border:`1.5px solid ${c.dot}`, display:"inline-block" }}/>
+            <span key={platform} style={{ display:"flex", alignItems:"center", gap:5, fontSize:12, color:"#6b7280", whiteSpace:"nowrap" }}>
+              <span style={{ width:10, height:10, borderRadius:2, background:c.bg, border:`1.5px solid ${c.dot}`, display:"inline-block", flexShrink:0 }}/>
               {platform}
             </span>
           ))}
