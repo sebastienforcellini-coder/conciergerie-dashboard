@@ -206,7 +206,7 @@ export default function PropertyDetail() {
         </div>
         <div style={{ display:"flex", gap:10, alignItems:"center" }}>
           <span style={{ background:"#f0c04028", color:"#b8860b", fontSize:12, fontWeight:600, padding:"4px 12px", borderRadius:99 }}>{commissionLabel(property)}</span>
-          <ICalSync property={property} onSynced={load}/>
+
           <button onClick={handleSync} disabled={syncing} style={{display:"flex",alignItems:"center",gap:6,background:syncing?"#f5f5f5":"#E1F5EE",color:syncing?"#9ca3af":"#085041",border:"1px solid #9FE1CB",padding:"8px 16px",borderRadius:9,cursor:syncing?"not-allowed":"pointer",fontSize:13,fontWeight:500}}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
             {syncing ? syncMsg||"Sync..." : "Sync iCal"}
