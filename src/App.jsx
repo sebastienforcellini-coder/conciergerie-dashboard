@@ -8,6 +8,7 @@ import Calendar from "./pages/Calendar";
 import Finances from "./pages/Finances";
 import Export from "./pages/Export";
 import Dashboard from "./pages/Dashboard";
+import Collaborateurs from "./pages/Collaborateurs";
 
 const ICONS = {
   dashboard: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>,
@@ -15,6 +16,7 @@ const ICONS = {
   calendar: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>,
   finances: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>,
   export: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
+  team: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>,
 };
 
 const NAV = [
@@ -23,6 +25,7 @@ const NAV = [
   { to:"/calendar",   label:"Calendrier", icon:"calendar",   end:false },
   { to:"/finances",   label:"Finances",   icon:"finances",   end:false },
   { to:"/export",     label:"Export",     icon:"export",     end:false },
+  { to:"/team",       label:"Équipe",     icon:"team",       end:false },
 ];
 
 function PageWrapper({ children }) {
@@ -109,6 +112,7 @@ export default function App() {
             <Route path="/calendar"    element={<Calendar />} />
             <Route path="/finances"    element={<Finances />} />
             <Route path="/export"      element={<Export />} />
+            <Route path="/team"        element={<Collaborateurs />} />
           </Routes>
         </PageWrapper>
       </main>
