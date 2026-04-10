@@ -53,7 +53,7 @@ export default function App() {
     <div className="app-layout">
       <nav className="app-sidebar">
         <div className="sidebar-logo" style={{ padding:"20px 16px 16px", borderBottom:"1px solid #ffffff0e", display:"flex", justifyContent:"center" }}>
-          <div style={{ width:130, height:130, borderRadius:"50%", background:"#f5f0eb", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:5, flexShrink:0 }}>
+          <div translate="no" className="notranslate" style={{ width:130, height:130, borderRadius:"50%", background:"#f5f0eb", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:5, flexShrink:0 }}>
             <div style={{ fontFamily:"Georgia,'Times New Roman',serif", fontSize:16, fontWeight:400, color:"#1a1a2e", letterSpacing:"2px", lineHeight:1 }}>YOU FIRST.</div>
             <div style={{ width:60, height:1, background:"#1a1a2e", opacity:.25 }}/>
             <div style={{ fontFamily:"Georgia,'Times New Roman',serif", fontSize:8, color:"#1a1a2e", letterSpacing:"1px", opacity:.5 }}>Everything, handled.</div>
@@ -92,7 +92,7 @@ export default function App() {
 
       <main className="app-main">
         <div className="mobile-header" style={{ display:"none" }}>
-          <div style={{ textAlign:"center" }}>
+          <div translate="no" className="notranslate" style={{ textAlign:"center" }}>
             <div style={{ fontFamily:"Georgia,'Times New Roman',serif", fontSize:16, fontWeight:400, color:"white", letterSpacing:"3px", opacity:.95 }}>YOU FIRST.</div>
             <div style={{ fontFamily:"Georgia,'Times New Roman',serif", fontSize:9, color:"white", letterSpacing:"1.5px", opacity:.5, marginTop:2 }}>Everything, handled.</div>
           </div>
