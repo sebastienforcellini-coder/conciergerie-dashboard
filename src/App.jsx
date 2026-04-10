@@ -53,7 +53,7 @@ export default function App() {
     <div className="app-layout">
       <nav className="app-sidebar">
         <div className="sidebar-logo" style={{ padding:"20px 16px 20px", borderBottom:"1px solid #ffffff0e" }}>
-          <img src="/logo.png" alt="You First" style={{ width:"100%", maxWidth:170, filter:"invert(1)", opacity:.9, display:"block" }}/>
+          <img src="/logo-white.png" alt="You First" style={{ width:"100%", maxWidth:170, display:"block", opacity:.95 }}/>
         </div>
 
         <div style={{ flex:1, padding:"8px 8px" }}>
@@ -63,7 +63,7 @@ export default function App() {
               style={({ isActive }) => ({
                 display:"flex", alignItems:"center", gap:10,
                 padding:"10px 12px", borderRadius:8, marginBottom:2,
-                color: isActive ? "#f0c040" : "#ffffff70",
+                color: isActive ? "#f0c040" : "#ffffffcc",
                 textDecoration:"none", fontSize:13,
                 fontWeight: isActive ? 500 : 400,
                 background: isActive ? "#ffffff12" : "transparent",
@@ -88,7 +88,7 @@ export default function App() {
 
       <main className="app-main">
         <div className="mobile-header" style={{ display:"none" }}>
-          <img src="/logo.png" alt="You First" style={{ height:36, objectFit:"contain", filter:"invert(1)", opacity:.9 }}/>
+          <img src="/logo-white.png" alt="You First" style={{ height:36, objectFit:"contain", opacity:.95 }}/>
         </div>
         <PageWrapper>
           <Routes>
