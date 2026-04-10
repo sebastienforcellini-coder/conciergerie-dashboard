@@ -44,11 +44,11 @@ export default function App() {
   }, []);
 
   if (splash) return (
-    <div style={{ position:"fixed", inset:0, background:"#1a1a2e", display:"flex", alignItems:"center", justifyContent:"center", zIndex:9999 }}>
-      <div translate="no" className="notranslate" style={{ width:"min(320px,80vw)", height:"min(320px,80vw)", borderRadius:"50%", background:"#f5f0eb", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:10 }}>
-        <div style={{ fontFamily:"Georgia,'Times New Roman',serif", fontSize:"clamp(20px,5vw,32px)", fontWeight:400, color:"#1a1a2e", letterSpacing:"3px", lineHeight:1 }}>YOU FIRST.</div>
-        <div style={{ width:"45%", height:1, background:"#1a1a2e", opacity:.25 }}/>
-        <div style={{ fontFamily:"Georgia,'Times New Roman',serif", fontSize:"clamp(10px,2.5vw,14px)", color:"#1a1a2e", letterSpacing:"1.5px", opacity:.5 }}>Everything, handled.</div>
+    <div style={{ position:"fixed", inset:0, background:"#f5f0eb", display:"flex", alignItems:"center", justifyContent:"center", zIndex:9999 }}>
+      <div translate="no" className="notranslate" style={{ width:"min(320px,80vw)", height:"min(320px,80vw)", borderRadius:"50%", background:"#1a1a2e", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:10 }}>
+        <div style={{ fontFamily:"Georgia,'Times New Roman',serif", fontSize:"clamp(20px,5vw,32px)", fontWeight:400, color:"#f5f0eb", letterSpacing:"3px", lineHeight:1 }}>YOU FIRST.</div>
+        <div style={{ width:"45%", height:1, background:"#f5f0eb", opacity:.4 }}/>
+        <div style={{ fontFamily:"Georgia,'Times New Roman',serif", fontSize:"clamp(10px,2.5vw,14px)", color:"#f5f0eb", letterSpacing:"1.5px", opacity:.6 }}>Everything, handled.</div>
       </div>
     </div>
   );
