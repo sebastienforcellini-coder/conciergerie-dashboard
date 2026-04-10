@@ -1,5 +1,5 @@
 import { collection, getDocs, addDoc, updateDoc, query, where, doc } from "firebase/firestore";
-import { db } from "./firebase";
+import { db } from "../firebase";
 
 function nightsBetween(checkIn, checkOut) {
   if (!checkIn || !checkOut) return 0;
