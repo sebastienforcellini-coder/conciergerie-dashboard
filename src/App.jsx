@@ -52,8 +52,8 @@ export default function App() {
   return (
     <div className="app-layout">
       <nav className="app-sidebar">
-        <div className="sidebar-logo" style={{ padding:"20px 16px 16px", borderBottom:"1px solid #ffffff0e", display:"flex", justifyContent:"center" }}>
-          <img src="/favicon.svg" alt="You First" style={{ width:140, height:140, borderRadius:"50%", background:"#f5f0eb", padding:8, display:"block", boxSizing:"border-box" }}/>
+        <div className="sidebar-logo" style={{ padding:"16px 16px 14px", borderBottom:"1px solid #ffffff0e", display:"flex", justifyContent:"center" }}>
+          <img src="/favicon.svg" alt="You First" style={{ width:90, height:90, borderRadius:"50%", background:"#f5f0eb", padding:5, display:"block", boxSizing:"border-box" }}/>
         </div>
 
         <div style={{ flex:1, padding:"8px 8px" }}>
