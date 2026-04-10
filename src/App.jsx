@@ -53,10 +53,10 @@ export default function App() {
     <div className="app-layout">
       <nav className="app-sidebar">
         <div className="sidebar-logo" style={{ padding:"20px 16px 20px", borderBottom:"1px solid #ffffff0e" }}>
-          <svg viewBox="0 0 200 52" xmlns="http://www.w3.org/2000/svg" style={{ width:"100%", maxWidth:180 }}>
-            <text x="4" y="30" fontFamily="Georgia, 'Times New Roman', serif" fontSize="26" fontWeight="400" fill="white" letterSpacing="3" opacity="0.95">YOU FIRST.</text>
-            <text x="5" y="46" fontFamily="Georgia, 'Times New Roman', serif" fontSize="11" fontWeight="400" fill="white" letterSpacing="1.5" opacity="0.55">Everything, handled.</text>
-          </svg>
+          <div style={{ padding:"4px 0" }}>
+            <div style={{ fontFamily:"Georgia,'Times New Roman',serif", fontSize:17, fontWeight:400, color:"white", letterSpacing:"3px", opacity:.95 }}>YOU FIRST.</div>
+            <div style={{ fontFamily:"Georgia,'Times New Roman',serif", fontSize:10, color:"white", letterSpacing:"1.5px", opacity:.5, marginTop:3 }}>Everything, handled.</div>
+          </div>
         </div>
 
         <div style={{ flex:1, padding:"8px 8px" }}>
@@ -91,10 +91,10 @@ export default function App() {
 
       <main className="app-main">
         <div className="mobile-header" style={{ display:"none" }}>
-          <svg viewBox="0 0 200 52" xmlns="http://www.w3.org/2000/svg" style={{ height:40 }}>
-            <text x="4" y="30" fontFamily="Georgia, 'Times New Roman', serif" fontSize="26" fontWeight="400" fill="white" letterSpacing="3" opacity="0.95">YOU FIRST.</text>
-            <text x="5" y="46" fontFamily="Georgia, 'Times New Roman', serif" fontSize="11" fontWeight="400" fill="white" letterSpacing="1.5" opacity="0.55">Everything, handled.</text>
-          </svg>
+          <div style={{ textAlign:"center" }}>
+            <div style={{ fontFamily:"Georgia,'Times New Roman',serif", fontSize:16, fontWeight:400, color:"white", letterSpacing:"3px", opacity:.95 }}>YOU FIRST.</div>
+            <div style={{ fontFamily:"Georgia,'Times New Roman',serif", fontSize:9, color:"white", letterSpacing:"1.5px", opacity:.5, marginTop:2 }}>Everything, handled.</div>
+          </div>
         </div>
         <PageWrapper>
           <Routes>
