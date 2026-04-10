@@ -4,7 +4,7 @@ import { collection, getDocs, addDoc, deleteDoc, updateDoc, doc, query, where } 
 import { db } from "../firebase";
 import { calcCommission, commissionLabel } from "./Properties";
 import { syncPropertyICal } from "./useICalSync";
-import ICalSync from "./ICalSync";
+
 
 const PLATFORMS = ["Airbnb", "Booking", "Direct", "Gens de confiance", "Autre"];
 const MONTHS = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
