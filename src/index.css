@@ -144,13 +144,26 @@ button:active { transform: scale(0.98); }
   .page { padding: 20px; }
 }
 
+/* ── MOBILE HEADER ── */
+.mobile-header {
+  display: none;
+  background: #1a1a2e;
+  padding: 12px 20px;
+  align-items: center;
+  justify-content: center;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
 /* ── MOBILE ── */
 @media (max-width: 640px) {
   :root { --sidebar-w: 0px; }
 
   .app-layout { flex-direction: column; }
   .app-sidebar { display: none; }
-  .app-main { padding-bottom: var(--bottom-nav-h); height: calc(100vh - var(--bottom-nav-h)); }
+  .app-main { padding-bottom: var(--bottom-nav-h); height: calc(100vh - var(--bottom-nav-h)); overflow-y: auto; }
+  .mobile-header { display: flex !important; }
 
   .bottom-nav {
     display: flex;

@@ -44,16 +44,16 @@ export default function App() {
   }, []);
 
   if (splash) return (
-    <div style={{ position:"fixed", inset:0, background:"#f5f0eb", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", zIndex:9999, animation:"fadeIn .3s ease-out" }}>
-      <img src="/logo.png" alt="You First. Everything, handled." style={{ width:"min(400px, 80vw)", opacity:1 }}/>
+    <div style={{ position:"fixed", inset:0, background:"#f5f0eb", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", zIndex:9999 }}>
+      <img src="/logo.png" alt="You First. Everything, handled." style={{ width:"min(600px, 85vw)", maxHeight:"60vh", objectFit:"contain" }}/>
     </div>
   );
 
   return (
     <div className="app-layout">
       <nav className="app-sidebar">
-        <div className="sidebar-logo" style={{ padding:"20px 16px 24px", borderBottom:"1px solid #ffffff0e" }}>
-          <img src="/logo.png" alt="You First. Everything, handled." style={{ width:"100%", maxWidth:160, filter:"brightness(0) invert(1)", opacity:.92, display:"block" }}/>
+        <div className="sidebar-logo" style={{ padding:"20px 16px 20px", borderBottom:"1px solid #ffffff0e" }}>
+          <img src="/logo.png" alt="You First" style={{ width:"100%", maxWidth:170, filter:"brightness(0) invert(1)", opacity:.95, display:"block" }}/>
         </div>
 
         <div style={{ flex:1, padding:"8px 8px" }}>
@@ -87,6 +87,9 @@ export default function App() {
       </nav>
 
       <main className="app-main">
+        <div className="mobile-header" style={{ display:"none" }}>
+          <img src="/logo.png" alt="You First" style={{ height:32, objectFit:"contain" }}/>
+        </div>
         <PageWrapper>
           <Routes>
             <Route path="/"            element={<Dashboard />} />

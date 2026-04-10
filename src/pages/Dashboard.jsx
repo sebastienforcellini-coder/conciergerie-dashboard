@@ -136,9 +136,9 @@ export default function Dashboard() {
   const brow  = {display:"flex",alignItems:"flex-start",gap:10,padding:"9px 0",borderBottom:"1px solid #f7f7f7"};
 
   if (loading) return (
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100vh",gap:24,background:"#f4f5f7"}}>
-      <img src="/logo.png" alt="You First" style={{width:"min(280px,70vw)",opacity:.8}}/>
-      <div style={{fontSize:13,color:"#9ca3af"}}>Chargement...</div>
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100vh",gap:32,background:"#f5f0eb"}}>
+      <img src="/logo.png" alt="You First" style={{width:"min(500px,80vw)",maxHeight:"50vh",objectFit:"contain"}}/>
+      <div style={{fontSize:13,color:"#9ca3af",letterSpacing:".5px"}}>Chargement...</div>
     </div>
   );
 
