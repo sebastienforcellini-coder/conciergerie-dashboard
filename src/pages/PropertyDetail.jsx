@@ -397,7 +397,7 @@ export default function PropertyDetail() {
         {[
           { id:"reservations", label:"Réservations" },
           { id:"equipe", label:"Équipe & contacts" },
-          { id:"depenses", label:\`Dépenses\` },
+          { id:"depenses", label:"Dépenses" },
         ].map(t => (
           <button key={t.id} onClick={()=>setActiveTab(t.id)} style={st.tab(activeTab===t.id)}>{t.label}</button>
         ))}
