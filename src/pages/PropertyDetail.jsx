@@ -291,6 +291,10 @@ export default function PropertyDetail() {
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
             {syncing ? syncMsg||"Sync..." : "Sync iCal"}
           </button>
+          <button onClick={copyOwnerLink} style={{ display:"flex", alignItems:"center", gap:6, background:copied?"#E1F5EE":"white", border:"1px solid "+(copied?"#9FE1CB":"#e5e7eb"), color:copied?"#085041":"#374151", padding:"8px 16px", borderRadius:9, cursor:"pointer", fontSize:13, fontWeight:500, boxShadow:"0 1px 3px rgba(0,0,0,.06)", transition:"all .2s" }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+            {copied ? "Lien copié !" : "Lien propriétaire"}
+          </button>
           <button onClick={()=>setShowEdit(!showEdit)} style={{ display:"flex", alignItems:"center", gap:6, background:"white", border:"1px solid #e5e7eb", color:"#374151", padding:"8px 16px", borderRadius:9, cursor:"pointer", fontSize:13, fontWeight:500, boxShadow:"0 1px 3px rgba(0,0,0,.06)" }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             Modifier la fiche
