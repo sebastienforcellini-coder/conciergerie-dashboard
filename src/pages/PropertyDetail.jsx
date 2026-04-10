@@ -104,6 +104,8 @@ export default function PropertyDetail() {
   const [syncing, setSyncing]     = useState(false);
   const [syncMsg, setSyncMsg]     = useState("");
   const [syncResult, setSyncResult] = useState(null);
+  const [quickEdit, setQuickEdit]   = useState(null);
+  const [quickForm, setQuickForm]   = useState({ name:"", amount:"", guests:"", paid:false });
 
   const load = async () => {
     const [pSnap, bSnap] = await Promise.all([
@@ -167,6 +169,23 @@ export default function PropertyDetail() {
 
   const togglePaid = async (b) => {
     await updateDoc(doc(db,"bookings",b.id), {paid:!b.paid}); load();
+  };
+
+  const openQuickEdit = (b) => {
+    setQuickEdit(b.id);
+    setQuickForm({ name: b.name==="Réservation"?"":b.name, amount: b.amount||"", guests: b.guests||"", paid: b.paid||false });
+  };
+
+  const saveQuickEdit = async (b) => {
+    await updateDoc(doc(db,"bookings",b.id), {
+      name:   quickForm.name   || b.name,
+      amount: Number(quickForm.amount) || 0,
+      guests: String(quickForm.guests) || "",
+      paid:   quickForm.paid,
+      fromICal: false,
+    });
+    setQuickEdit(null);
+    load();
   };
 
   const handleSync = async () => {
@@ -375,21 +394,60 @@ export default function PropertyDetail() {
           const c = calcCommission(b, property);
           const plt = PLT[b.platform]||PLT["Autre"];
           const n = b.nights||nights(b.checkIn,b.checkOut);
+          const isIncomplete = b.fromICal && (!b.amount || b.amount===0 || b.name==="Réservation");
+          const isQuickEditing = quickEdit === b.id;
           return (
-            <div key={b.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 0", borderBottom:"1px solid #f7f7f7" }}>
-              <div style={{ width:30, height:30, borderRadius:"50%", background:plt.bg, color:plt.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:600, flexShrink:0 }}>{(b.name||"?")[0].toUpperCase()}</div>
-              <div style={{ flex:1, minWidth:0 }}>
-                <div style={{ fontSize:13, fontWeight:500, color:"#1a1a2e" }}>{b.name||"—"}</div>
-                <div style={{ fontSize:11, color:"#9ca3af", marginTop:1 }}>{b.checkIn} → {b.checkOut} · {n} nuit{n>1?"s":""} · {b.guests||"?"} pers.</div>
+            <div key={b.id}>
+              <div style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 0", borderBottom: isQuickEditing?"none":"1px solid #f7f7f7", background: isIncomplete?"#fffbf0":"transparent", borderRadius: isIncomplete?8:0, padding: isIncomplete?"10px 12px":"9px 0" }}>
+                <div style={{ width:30, height:30, borderRadius:"50%", background:plt.bg, color:plt.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:600, flexShrink:0 }}>{(b.name||"?")[0].toUpperCase()}</div>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                    <div style={{ fontSize:13, fontWeight:500, color:"#1a1a2e" }}>{b.name||"—"}</div>
+                    {isIncomplete && <span style={{ fontSize:10, background:"#FAEEDA", color:"#854F0B", padding:"1px 7px", borderRadius:99, fontWeight:600 }}>À compléter</span>}
+                    {b.fromICal && !isIncomplete && <span style={{ fontSize:10, background:"#E1F5EE", color:"#085041", padding:"1px 7px", borderRadius:99 }}>iCal</span>}
+                  </div>
+                  <div style={{ fontSize:11, color:"#9ca3af", marginTop:1 }}>{b.checkIn} → {b.checkOut} · {n} nuit{n>1?"s":""} · {b.guests||"?"} pers.</div>
+                </div>
+                <span style={{ fontSize:10, background:plt.bg, color:plt.color, padding:"2px 8px", borderRadius:99, fontWeight:500 }}>{b.platform}</span>
+                <div style={{ textAlign:"right", minWidth:110 }}>
+                  <div style={{ fontSize:13, fontWeight:600, color: b.amount>0?"#1a1a2e":"#d1d5db" }}>{fmt(b.amount)} MAD</div>
+                  <div style={{ fontSize:11, color:"#378ADD" }}>→ {fmt(c.reversement)} MAD</div>
+                </div>
+                {isIncomplete ? (
+                  <button onClick={()=>isQuickEditing?setQuickEdit(null):openQuickEdit(b)}
+                    style={{ ...st.btnSm, background:"#FAEEDA", color:"#854F0B", borderColor:"#FAC775", fontWeight:600, minWidth:90 }}>
+                    {isQuickEditing ? "Annuler" : "Compléter"}
+                  </button>
+                ) : (
+                  <button onClick={()=>togglePaid(b)} style={{ ...st.btnSm, background:b.paid?"#E1F5EE":"white", color:b.paid?"#085041":"#9ca3af", minWidth:90, fontWeight:b.paid?500:400 }}>{b.paid?"Encaissé":"Non payé"}</button>
+                )}
+                <button style={st.btnSm} onClick={()=>openForm(b)}>Éditer</button>
+                <button style={{ ...st.btnSm, color:"#E24B4A", borderColor:"#FAECE7" }} onClick={()=>deleteBooking(b.id)}>Suppr.</button>
               </div>
-              <span style={{ fontSize:10, background:plt.bg, color:plt.color, padding:"2px 8px", borderRadius:99, fontWeight:500 }}>{b.platform}</span>
-              <div style={{ textAlign:"right", minWidth:110 }}>
-                <div style={{ fontSize:13, fontWeight:600 }}>{fmt(b.amount)} MAD</div>
-                <div style={{ fontSize:11, color:"#378ADD" }}>→ {fmt(c.reversement)} MAD</div>
-              </div>
-              <button onClick={()=>togglePaid(b)} style={{ ...st.btnSm, background:b.paid?"#E1F5EE":"white", color:b.paid?"#085041":"#9ca3af", minWidth:90, fontWeight:b.paid?500:400 }}>{b.paid?"Encaissé":"Non payé"}</button>
-              <button style={st.btnSm} onClick={()=>openForm(b)}>Éditer</button>
-              <button style={{ ...st.btnSm, color:"#E24B4A", borderColor:"#FAECE7" }} onClick={()=>deleteBooking(b.id)}>Suppr.</button>
+
+              {isQuickEditing && (
+                <div style={{ background:"#fffbf0", border:"1px solid #FAC775", borderTop:"none", borderRadius:"0 0 10px 10px", padding:"12px 16px", marginBottom:8, display:"grid", gridTemplateColumns:"1fr 1fr 1fr auto auto", gap:10, alignItems:"flex-end" }}>
+                  <div>
+                    <label style={{ ...st.label, color:"#854F0B" }}>Nom du voyageur</label>
+                    <input style={{ ...st.input, borderColor:"#FAC775" }} value={quickForm.name} onChange={e=>setQuickForm({...quickForm,name:e.target.value})} placeholder="Prénom Nom"/>
+                  </div>
+                  <div>
+                    <label style={{ ...st.label, color:"#854F0B" }}>Montant (MAD)</label>
+                    <input type="number" style={{ ...st.input, borderColor:"#FAC775" }} value={quickForm.amount} onChange={e=>setQuickForm({...quickForm,amount:e.target.value})} placeholder="0"/>
+                  </div>
+                  <div>
+                    <label style={{ ...st.label, color:"#854F0B" }}>Nb voyageurs</label>
+                    <input type="number" style={{ ...st.input, borderColor:"#FAC775" }} value={quickForm.guests} onChange={e=>setQuickForm({...quickForm,guests:e.target.value})} placeholder="2"/>
+                  </div>
+                  <div style={{ display:"flex", alignItems:"center", gap:6, paddingBottom:2 }}>
+                    <input type="checkbox" id={`paid-${b.id}`} checked={quickForm.paid} onChange={e=>setQuickForm({...quickForm,paid:e.target.checked})} style={{width:15,height:15}}/>
+                    <label htmlFor={`paid-${b.id}`} style={{ fontSize:12, color:"#854F0B", cursor:"pointer" }}>Encaissé</label>
+                  </div>
+                  <button onClick={()=>saveQuickEdit(b)} style={{ background:"#BA7517", color:"white", border:"none", padding:"9px 16px", borderRadius:8, cursor:"pointer", fontSize:13, fontWeight:500 }}>
+                    Enregistrer
+                  </button>
+                </div>
+              )}
             </div>
           );
         })}
