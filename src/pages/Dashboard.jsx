@@ -146,7 +146,7 @@ export default function Dashboard() {
 
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:24}}>
         <div>
-          <h1 style={{fontSize:22,fontWeight:600,color:"#1a1a2e",marginBottom:3}}>{greet} !</h1>
+          <h1 className="hide-mobile" style={{fontSize:22,fontWeight:600,color:"#1a1a2e",marginBottom:3}}>{greet} !</h1>
           <div style={{fontSize:13,color:"#9ca3af"}}>{DAYS[now.getDay()]} {now.getDate()} {MONTHS[now.getMonth()]} {now.getFullYear()} · {properties.length} biens sous gestion</div>
         </div>
         <div style={{display:"flex",gap:8,alignItems:"center"}}>
