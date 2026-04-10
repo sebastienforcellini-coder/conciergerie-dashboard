@@ -107,6 +107,14 @@ export default function PropertyDetail() {
   const [editId, setEditId]         = useState(null);
   const [loading, setLoading]       = useState(true);
   const [syncing, setSyncing]       = useState(false);
+  const [copied, setCopied]         = useState(false);
+
+  const copyOwnerLink = () => {
+    const url = `${window.location.origin}/owner/${id}`;
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
   const [syncMsg, setSyncMsg]       = useState("");
   const [syncResult, setSyncResult] = useState(null);
   const [quickEdit, setQuickEdit]   = useState(null);
