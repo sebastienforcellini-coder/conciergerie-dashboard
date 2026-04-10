@@ -118,7 +118,7 @@ export default function Finances() {
         </div>
       </div>
 
-      <div style={s.kpiRow}>
+      <div className="grid-4" style={{marginBottom:20}}>
         <div style={s.kpi}>
           <div style={s.kpiLbl}>Revenus bruts</div>
           <div style={s.kpiVal("#2ecc71")}>{fmt(totals.revenue)} MAD</div>
@@ -148,7 +148,7 @@ export default function Finances() {
         </div>
       </div>
 
-      <div style={s.row2}>
+      <div className="grid-2-1" style={{marginBottom:16}}>
         <div style={s.card}>
           <div style={s.cardHd}>Revenus & commissions par mois — {selectedYear}</div>
           <div style={{ display: "flex", alignItems: "flex-end", gap: 3, height: 100 }}>

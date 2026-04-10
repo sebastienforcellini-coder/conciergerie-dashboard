@@ -79,7 +79,7 @@ export default function Calendar() {
   const totalW = LABEL_W + days * COL_W;
 
   return (
-    <div style={{ padding:"24px 28px" }}>
+    <div className="page">
       <div style={{ display:"flex", alignItems:"center", gap:16, marginBottom:24 }}>
         <h1 style={{ fontSize:22, fontWeight:600, color:"#1a1a2e", margin:0 }}>Calendrier</h1>
         <div style={{ display:"flex", alignItems:"center", gap:8, background:"white", border:"1px solid #e5e7eb", borderRadius:10, padding:"6px 4px", boxShadow:"0 1px 3px rgba(0,0,0,.05)" }}>

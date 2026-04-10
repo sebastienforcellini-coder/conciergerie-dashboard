@@ -138,7 +138,7 @@ export default function Dashboard() {
   if (loading) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100vh",color:"#9ca3af"}}>Chargement...</div>;
 
   return (
-    <div style={{padding:"24px 28px",minHeight:"100vh"}}>
+    <div className="page">
 
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:24}}>
         <div>
@@ -167,14 +167,14 @@ export default function Dashboard() {
         )}
       </div>
 
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,minmax(0,1fr))",gap:12,marginBottom:20}}>
+      <div className="grid-4" style={{marginBottom:20}}>
         <KpiCard label="Biens occupés ce soir" value={`${occupiedTonight.length} / ${properties.length}`} sub={`Taux ${properties.length>0?Math.round(occupiedTonight.length/properties.length*100):0}%`} icon={IC.home} accent="#1D9E75" trend={occupiedTonight.length>properties.length/2?"up":"neu"}/>
         <KpiCard label={`Commissions ${monthLbl}`} value={`${fmt(totalCommission)} MAD`} sub={`sur ${fmt(totalRevenue)} MAD bruts`} icon={IC.euro} accent="#f0c040" trend="up"/>
         <KpiCard label="Encaissements en attente" value={unpaid.length} sub={unpaid.length>0?`${unpaid.length} résa non payée${unpaid.length>1?"s":""}` : "Tout est encaissé"} icon={IC.alert} accent={unpaid.length>0?"#E24B4A":"#1D9E75"} trend={unpaid.length>0?"warn":"up"}/>
         <KpiCard label="Biens sans résa à venir" value={noFutureResa.length} sub={noFutureResa.length>0?"à relancer":"Tous les biens ont une résa"} icon={IC.search} accent={noFutureResa.length>0?"#EF9F27":"#1D9E75"} trend={noFutureResa.length>0?"warn":"up"}/>
       </div>
 
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14,marginBottom:14}}>
+      <div className="grid-3" style={{marginBottom:14}}>
 
         <div style={card}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>

@@ -268,7 +268,7 @@ export default function PropertyDetail() {
   const contacts    = property.contacts    || [];
 
   return (
-    <div style={{ padding:"24px 28px" }}>
+    <div className="page">
       <button style={{ background:"none", border:"none", color:"#9ca3af", cursor:"pointer", fontSize:13, padding:"0 0 16px", display:"flex", alignItems:"center", gap:6 }} onClick={()=>navigate("/properties")}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
         Retour aux propriétés
@@ -315,13 +315,13 @@ export default function PropertyDetail() {
             <h3 style={{ margin:0, fontSize:16, fontWeight:500 }}>Modifier la fiche</h3>
             <button onClick={()=>setShowEdit(false)} style={{ background:"none", border:"none", color:"#9ca3af", cursor:"pointer", fontSize:20 }}>×</button>
           </div>
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+          <div className="grid-form-2">
             {[["name","Nom *"],["owner","Propriétaire *"],["phone","Téléphone"],["email","Email"],["address","Adresse"]].map(([key,label]) => (
               <div key={key}><label style={st.label}>{label}</label><input style={st.input} value={editForm[key]||""} onChange={e=>setEditForm({...editForm,[key]:e.target.value})}/></div>
             ))}
           </div>
           <div style={st.section}>Liens iCal</div>
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+          <div className="grid-form-2">
             {[["icalAirbnb","iCal Airbnb"],["icalBooking","iCal Booking"]].map(([key,label]) => (
               <div key={key}><label style={st.label}>{label}</label><input style={st.input} value={editForm[key]||""} onChange={e=>setEditForm({...editForm,[key]:e.target.value})} placeholder="https://..."/></div>
             ))}
@@ -340,7 +340,7 @@ export default function PropertyDetail() {
         ))}
       </div>
 
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,minmax(0,1fr))", gap:10, marginBottom:20 }}>
+      <div className="grid-4" style={{marginBottom:20}}>
         {[
           { label:"Revenus bruts", value:`${fmt(totals.revenue)} MAD`, sub:`${yearBookings.length} résa · ${totals.nights} nuits`, color:"#1D9E75" },
           totals.platformFee>0 && { label:"Comm. plateforme", value:`− ${fmt(totals.platformFee)} MAD`, sub:`${property.commissionRules?.platformFeeRate}%`, color:"#E24B4A" },
@@ -355,7 +355,7 @@ export default function PropertyDetail() {
         ))}
       </div>
 
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:16 }}>
+      <div className="grid-2" style={{marginBottom:16}}>
         <div style={st.card}>
           <div style={st.cardHd}>Revenus par mois — {year}</div>
           <div style={{ display:"flex", alignItems:"flex-end", gap:3, height:80 }}>
@@ -412,7 +412,7 @@ export default function PropertyDetail() {
 
           {showForm && (
             <div style={{ background:"#f9fafb", borderRadius:10, padding:20, marginBottom:20, border:"1px solid #f0f0f0" }}>
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr 1fr", gap:10, marginBottom:10 }}>
+              <div className="grid-form-4" style={{marginBottom:10}}>
                 {[["name","Voyageur","text","Prénom"],["checkIn","Arrivée","date",""],["checkOut","Départ","date",""],["amount","Montant (MAD)","number","0"]].map(([key,label,type,ph]) => (
                   <div key={key}><label style={st.label}>{label}</label><input type={type} style={st.input} value={form[key]} onChange={e=>setForm({...form,[key]:e.target.value})} placeholder={ph}/></div>
                 ))}
@@ -523,7 +523,7 @@ export default function PropertyDetail() {
 
             {showDepForm && (
               <div style={{ background:"#f9fafb", borderRadius:10, padding:16, marginBottom:16, border:"1px solid #f0f0f0" }}>
-                <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr auto", gap:10, alignItems:"flex-end" }}>
+                <div className="grid-form-4" style={{gap:10,alignItems:"flex-end"}}>
                   <div><label style={st.label}>Description</label>
                     <input style={st.input} value={depForm.description} onChange={e=>setDepForm({...depForm,description:e.target.value})} placeholder="Ex: Réparation robinet..."/>
                   </div>
@@ -606,7 +606,7 @@ export default function PropertyDetail() {
             <div style={st.cardHd}>Gouvernante</div>
             {editForm && (
               <div>
-                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr 1fr", gap:12, marginBottom:16 }}>
+                <div className="grid-form-4" style={{marginBottom:16}}>
                   <div><label style={st.label}>Nom complet</label>
                     <input style={st.input} value={editForm.gouvernante?.nom||""} onChange={e=>setEditForm({...editForm,gouvernante:{...editForm.gouvernante,nom:e.target.value}})} placeholder="Ex : Kawthar"/>
                   </div>

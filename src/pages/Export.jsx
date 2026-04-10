@@ -201,9 +201,9 @@ export default function Export() {
   }, { revenue: 0, commission: 0, reversement: 0 });
 
   return (
-    <div style={s.page}>
+    <div className="page">
       <h1 style={s.h1}>Export Excel</h1>
-      <div style={s.grid}>
+      <div className="grid-2" style={{maxWidth:900}}>
         <div style={s.card}>
           <div style={s.cardHd}>Paramètres d'export</div>
           <label style={s.label}>Année</label>

@@ -69,7 +69,7 @@ function CommissionConfigurator({ rules, onChange }) {
   return (
     <div>
       <div style={st.sectionTitle}>Modèle de commission</div>
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:16 }}>
+      <div className="grid-form-2" style={{marginBottom:16}}>
         {MODES.map(m => (
           <div key={m.value} onClick={() => set("mode", m.value)}
             style={{ border: rules.mode===m.value ? "2px solid #1a1a2e" : "1px solid #e5e7eb", borderRadius:10, padding:"10px 14px", cursor:"pointer", background: rules.mode===m.value ? "#f8f8ff" : "white" }}>
@@ -89,7 +89,7 @@ function CommissionConfigurator({ rules, onChange }) {
         </div>
       )}
       {rules.mode==="per_platform" && (
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr 1fr", gap:10, marginBottom:12 }}>
+        <div className="grid-form-4" style={{marginBottom:12}}>
           {PLATFORMS.slice(0,4).map(p => (
             <div key={p} style={st.field}><label style={st.label}>{p} (%)</label><input type="number" style={st.input} value={rules.rates?.[p]??20} onChange={e=>setRate(p,e.target.value)} min={0} max={100}/></div>
           ))}
@@ -169,7 +169,7 @@ export default function Properties() {
   };
 
   return (
-    <div style={{ padding:"24px 28px" }}>
+    <div className="page">
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24 }}>
         <div>
           <h1 style={{ fontSize:22, fontWeight:600, color:"#1a1a2e", marginBottom:3 }}>Propriétés</h1>
@@ -184,7 +184,7 @@ export default function Properties() {
       {showForm && (
         <div style={{ background:"white", borderRadius:14, padding:28, marginBottom:24, border:"1px solid #f0f0f0", boxShadow:"0 4px 16px rgba(0,0,0,.06)" }}>
           <h3 style={{ margin:"0 0 20px", fontSize:16, fontWeight:500 }}>Nouvelle propriété</h3>
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:4 }}>
+          <div className="grid-form-2" style={{marginBottom:4}}>
             {[["name","Nom de la propriété *"],["owner","Propriétaire *"],["phone","Téléphone"],["email","Email"],["address","Adresse"]].map(([key,label]) => (
               <div key={key} style={st.field}>
                 <label style={st.label}>{label}</label>
@@ -193,7 +193,7 @@ export default function Properties() {
             ))}
           </div>
           <div style={st.sectionTitle}>Liens iCal</div>
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:4 }}>
+          <div className="grid-form-2" style={{marginBottom:4}}>
             {[["icalAirbnb","iCal Airbnb"],["icalBooking","iCal Booking"]].map(([key,label]) => (
               <div key={key} style={st.field}>
                 <label style={st.label}>{label}</label>
