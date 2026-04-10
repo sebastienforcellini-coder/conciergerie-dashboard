@@ -21,6 +21,9 @@ const MODES = [
   { value:"per_platform",    label:"% différent par plateforme", desc:"Airbnb 20%, Direct 15%..." },
 ];
 const SPECIALITES = ["Plombier","Électricien","Pisciniste","Jardinier","Peintre","Menuisier","Climatisation","Serrurier","Autre"];
+const CAT_PROPRIO = ["Gouvernante","Eau/Électricité","Internet","Assurance","Taxe","Maintenance","Nourriture","Autre"];
+const CAT_CONCIERGERIE = ["Plomberie","Électricité","Peinture","Menuiserie","Climatisation","Jardinage","Piscine","Nettoyage","Autre"];
+const emptyDepense = { description:"", montant:"", date:new Date().toISOString().split("T")[0], categorie:"", type:"proprio", facture:false };
 const emptyBooking = { name:"", platform:"Airbnb", checkIn:"", checkOut:"", amount:"", guests:"", notes:"", paid:false };
 
 function nights(a,b) { if(!a||!b) return 0; return Math.max(0,Math.round((new Date(b)-new Date(a))/86400000)); }
@@ -109,17 +112,23 @@ export default function PropertyDetail() {
   const [quickEdit, setQuickEdit]   = useState(null);
   const [quickForm, setQuickForm]   = useState({ name:"", amount:"", guests:"", paid:false });
   const [newContact, setNewContact] = useState({ nom:"", telephone:"", specialite:"Plombier" });
+  const [depenses, setDepenses]         = useState([]);
+  const [showDepForm, setShowDepForm]   = useState(false);
+  const [depTab, setDepTab]             = useState("proprio");
+  const [depForm, setDepForm]           = useState(emptyDepense);
   const [showNewContact, setShowNewContact] = useState(false);
 
   const load = async () => {
-    const [pSnap, bSnap] = await Promise.all([
+    const [pSnap, bSnap, dSnap] = await Promise.all([
       getDocs(collection(db,"properties")),
-      getDocs(query(collection(db,"bookings"), where("propertyId","==",id)))
+      getDocs(query(collection(db,"bookings"), where("propertyId","==",id))),
+      getDocs(query(collection(db,"depenses"), where("propertyId","==",id)))
     ]);
     const props = pSnap.docs.map(d => ({id:d.id,...d.data()}));
     const prop  = props.find(p => p.id===id) || null;
     setProperty(prop);
     setBookings(bSnap.docs.map(d => ({id:d.id,...d.data()})));
+    setDepenses(dSnap.docs.map(d => ({id:d.id,...d.data()})));
     if (prop) setEditForm({
       name: prop.name||"", owner: prop.owner||"", phone: prop.phone||"",
       email: prop.email||"", address: prop.address||"",
@@ -165,6 +174,31 @@ export default function PropertyDetail() {
     setSyncing(false);
   };
 
+  const saveDepense = async () => {
+    if (!depForm.description||!depForm.montant) return alert("Description et montant requis");
+    await addDoc(collection(db,"depenses"), {
+      propertyId: id,
+      description: depForm.description,
+      montant: Number(depForm.montant),
+      date: depForm.date,
+      categorie: depForm.categorie || (depForm.type==="proprio" ? CAT_PROPRIO[0] : CAT_CONCIERGERIE[0]),
+      type: depForm.type,
+      facture: depForm.facture,
+    });
+    setDepForm(emptyDepense);
+    setShowDepForm(false);
+    load();
+  };
+
+  const deleteDepense = async (did) => {
+    if (!confirm("Supprimer cette dépense ?")) return;
+    await deleteDoc(doc(db,"depenses",did)); load();
+  };
+
+  const toggleFacture = async (d) => {
+    await updateDoc(doc(db,"depenses",d.id), {facture:!d.facture}); load();
+  };
+
   const addContact = async () => {
     if (!newContact.nom) return;
     const contacts = [...(editForm.contacts||[]), { ...newContact, id: Date.now().toString() }];
@@ -183,6 +217,13 @@ export default function PropertyDetail() {
     await updateDoc(doc(db,"properties",id), { gouvernante: editForm.gouvernante });
     load();
   };
+
+  const yearDepenses    = depenses.filter(d => d.date?.startsWith(String(year)));
+  const depProprio      = yearDepenses.filter(d => d.type==="proprio");
+  const depConciergerie = yearDepenses.filter(d => d.type==="conciergerie");
+  const totalDepProprio = depProprio.reduce((s,d) => s+(d.montant||0), 0);
+  const totalDepConc    = depConciergerie.reduce((s,d) => s+(d.montant||0), 0);
+  const totalDepenses   = totalDepProprio + totalDepConc;
 
   const yearBookings = bookings.filter(b => b.checkIn?.startsWith(String(year)));
   const totals = yearBookings.reduce((acc,b) => {
@@ -304,7 +345,7 @@ export default function PropertyDetail() {
           { label:"Revenus bruts", value:`${fmt(totals.revenue)} MAD`, sub:`${yearBookings.length} résa · ${totals.nights} nuits`, color:"#1D9E75" },
           totals.platformFee>0 && { label:"Comm. plateforme", value:`− ${fmt(totals.platformFee)} MAD`, sub:`${property.commissionRules?.platformFeeRate}%`, color:"#E24B4A" },
           { label:"Ma commission", value:`+ ${fmt(totals.commission)} MAD`, sub:commissionLabel(property), color:"#f0a500" },
-          { label:"Reversement propriétaire", value:`${fmt(totals.reversement)} MAD`, sub:"net à reverser", color:"#378ADD" },
+          { label:"Reversement propriétaire", value:`${fmt(totals.reversement - totalDepenses)} MAD`, sub:`après ${fmt(totalDepenses)} MAD de charges`, color:"#378ADD" },
         ].filter(Boolean).map((k,i) => (
           <div key={i} style={{ background:"#f8f9fa", borderRadius:12, padding:"14px 16px" }}>
             <div style={{ fontSize:11, color:"#9ca3af", textTransform:"uppercase", letterSpacing:".4px", marginBottom:6 }}>{k.label}</div>
@@ -356,6 +397,7 @@ export default function PropertyDetail() {
         {[
           { id:"reservations", label:"Réservations" },
           { id:"equipe", label:"Équipe & contacts" },
+          { id:"depenses", label:\`Dépenses\` },
         ].map(t => (
           <button key={t.id} onClick={()=>setActiveTab(t.id)} style={st.tab(activeTab===t.id)}>{t.label}</button>
         ))}
@@ -460,6 +502,103 @@ export default function PropertyDetail() {
         </div>
       )}
 
+      {activeTab==="depenses" && (
+        <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+          <div style={{ display:"flex", gap:8, marginBottom:4 }}>
+            {[{id:"proprio",label:"Charges propriétaire"},{id:"conciergerie",label:"Prestations conciergerie"}].map(t => (
+              <button key={t.id} onClick={()=>setDepTab(t.id)} style={{ padding:"7px 16px", borderRadius:8, border:"1px solid "+(depTab===t.id?"#1a1a2e":"#e5e7eb"), background:depTab===t.id?"#1a1a2e":"white", color:depTab===t.id?"white":"#6b7280", cursor:"pointer", fontSize:13 }}>{t.label}</button>
+            ))}
+          </div>
+
+          <div style={st.card}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
+              <div>
+                <div style={st.cardHd}>{depTab==="proprio"?"Charges propriétaire":"Prestations conciergerie"}</div>
+                <div style={{ fontSize:13, color:"#9ca3af", marginTop:-8 }}>
+                  Total {year} : <strong style={{ color:"#E24B4A" }}>{fmt(depTab==="proprio"?totalDepProprio:totalDepConc)} MAD</strong>
+                </div>
+              </div>
+              <button onClick={()=>setShowDepForm(!showDepForm)} style={st.btn}>+ Ajouter</button>
+            </div>
+
+            {showDepForm && (
+              <div style={{ background:"#f9fafb", borderRadius:10, padding:16, marginBottom:16, border:"1px solid #f0f0f0" }}>
+                <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr auto", gap:10, alignItems:"flex-end" }}>
+                  <div><label style={st.label}>Description</label>
+                    <input style={st.input} value={depForm.description} onChange={e=>setDepForm({...depForm,description:e.target.value})} placeholder="Ex: Réparation robinet..."/>
+                  </div>
+                  <div><label style={st.label}>Montant (MAD)</label>
+                    <input type="number" style={st.input} value={depForm.montant} onChange={e=>setDepForm({...depForm,montant:e.target.value})} placeholder="0"/>
+                  </div>
+                  <div><label style={st.label}>Date</label>
+                    <input type="date" style={st.input} value={depForm.date} onChange={e=>setDepForm({...depForm,date:e.target.value})}/>
+                  </div>
+                  <div><label style={st.label}>Catégorie</label>
+                    <select style={st.input} value={depForm.categorie} onChange={e=>setDepForm({...depForm,categorie:e.target.value})}>
+                      {(depTab==="proprio"?CAT_PROPRIO:CAT_CONCIERGERIE).map(c=><option key={c}>{c}</option>)}
+                    </select>
+                  </div>
+                  <button onClick={()=>saveDepense({...depForm,type:depTab})} style={st.btn}>Ajouter</button>
+                </div>
+                {depTab==="conciergerie" && (
+                  <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:10 }}>
+                    <input type="checkbox" checked={depForm.facture} onChange={e=>setDepForm({...depForm,facture:e.target.checked})} style={{width:15,height:15}}/>
+                    <label style={{ fontSize:12, color:"#6b7280", cursor:"pointer" }}>Déjà facturé au propriétaire</label>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {yearDepenses.filter(d=>d.type===depTab).length===0&&!showDepForm && (
+              <p style={{ color:"#c0c0c0", fontSize:13, textAlign:"center", padding:"20px 0" }}>Aucune dépense enregistrée pour {year}.</p>
+            )}
+
+            {yearDepenses.filter(d=>d.type===depTab).sort((a,b)=>b.date>a.date?1:-1).map(d => (
+              <div key={d.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 0", borderBottom:"1px solid #f7f7f7" }}>
+                <div style={{ width:30, height:30, borderRadius:8, background:"#FAECE7", color:"#993C1D", display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, fontWeight:600, flexShrink:0 }}>
+                  {(d.categorie||"?")[0].toUpperCase()}
+                </div>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontSize:13, fontWeight:500, color:"#1a1a2e" }}>{d.description}</div>
+                  <div style={{ fontSize:11, color:"#9ca3af", marginTop:1 }}>{fmtDate(d.date)} · {d.categorie}</div>
+                </div>
+                {depTab==="conciergerie" && (
+                  <button onClick={()=>toggleFacture(d)} style={{ ...st.btnSm, background:d.facture?"#E1F5EE":"white", color:d.facture?"#085041":"#9ca3af", minWidth:90 }}>
+                    {d.facture?"Facturé":"À facturer"}
+                  </button>
+                )}
+                <div style={{ fontSize:13, fontWeight:600, color:"#E24B4A", minWidth:80, textAlign:"right" }}>
+                  − {fmt(d.montant)} MAD
+                </div>
+                <button onClick={()=>deleteDepense(d.id)} style={{ ...st.btnSm, color:"#E24B4A", borderColor:"#FAECE7" }}>Suppr.</button>
+              </div>
+            ))}
+
+            {yearDepenses.filter(d=>d.type===depTab).length>0 && (
+              <div style={{ display:"flex", justifyContent:"flex-end", padding:"12px 0 0", fontSize:13, borderTop:"1px solid #f0f0f0", marginTop:8 }}>
+                <span style={{ color:"#9ca3af" }}>Total : <strong style={{ color:"#E24B4A" }}>− {fmt(depTab==="proprio"?totalDepProprio:totalDepConc)} MAD</strong></span>
+              </div>
+            )}
+          </div>
+
+          <div style={{ background:"#f8f9fa", borderRadius:12, padding:"16px 20px", border:"1px solid #f0f0f0" }}>
+            <div style={{ fontSize:12, color:"#9ca3af", marginBottom:8, fontWeight:600, textTransform:"uppercase", letterSpacing:".4px" }}>Résumé financier {year}</div>
+            {[
+              { label:"Revenus bruts", value:totals.revenue, color:"#1D9E75" },
+              { label:"Ma commission", value:-totals.commission, color:"#f0a500" },
+              { label:"Charges propriétaire", value:-totalDepProprio, color:"#E24B4A" },
+              { label:"Prestations conciergerie", value:-totalDepConc, color:"#E24B4A" },
+              { label:"Reversement net", value:totals.reversement-totalDepenses, color:"#378ADD", bold:true },
+            ].map((row,i) => (
+              <div key={i} style={{ display:"flex", justifyContent:"space-between", padding:"5px 0", borderBottom:i<4?"1px solid #f0f0f0":"none", marginTop:i===4?4:0 }}>
+                <span style={{ fontSize:13, color:row.bold?"#1a1a2e":"#6b7280", fontWeight:row.bold?600:400 }}>{row.label}</span>
+                <span style={{ fontSize:13, color:row.color, fontWeight:row.bold?600:500 }}>{row.value>=0?"+":""}{fmt(row.value)} MAD</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {activeTab==="equipe" && (
         <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
 
@@ -510,7 +649,7 @@ export default function PropertyDetail() {
 
             {showNewContact && (
               <div style={{ background:"#f9fafb", borderRadius:10, padding:16, marginBottom:16, border:"1px solid #f0f0f0" }}>
-                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr auto", gap:10, alignItems:"flex-end" }}>
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:12, marginBottom:12 }}>
                   <div><label style={st.label}>Nom</label><input style={st.input} value={newContact.nom} onChange={e=>setNewContact({...newContact,nom:e.target.value})} placeholder="Ex : Ahmed"/></div>
                   <div><label style={st.label}>Téléphone</label><input style={st.input} value={newContact.telephone} onChange={e=>setNewContact({...newContact,telephone:e.target.value})} placeholder="06..."/></div>
                   <div><label style={st.label}>Spécialité</label>
@@ -518,7 +657,10 @@ export default function PropertyDetail() {
                       {SPECIALITES.map(s=><option key={s}>{s}</option>)}
                     </select>
                   </div>
-                  <button onClick={addContact} style={st.btn}>Ajouter</button>
+                </div>
+                <div style={{ display:"flex", gap:8 }}>
+                  <button onClick={addContact} style={st.btn}>Enregistrer</button>
+                  <button onClick={()=>setShowNewContact(false)} style={{ ...st.btnSm, padding:"9px 14px" }}>Annuler</button>
                 </div>
               </div>
             )}
