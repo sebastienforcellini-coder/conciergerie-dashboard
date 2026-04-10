@@ -45,7 +45,7 @@ export default function App() {
 
   if (splash) return (
     <div style={{ position:"fixed", inset:0, background:"#f5f0eb", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", zIndex:9999 }}>
-      <img src="/logo.png" alt="You First. Everything, handled." style={{ width:"min(600px, 85vw)", maxHeight:"60vh", objectFit:"contain" }}/>
+      <img src="/logo.png" alt="You First. Everything, handled." style={{ width:"min(600px, 85vw)", maxHeight:"55vh", objectFit:"contain" }}/>
     </div>
   );
 
@@ -53,7 +53,7 @@ export default function App() {
     <div className="app-layout">
       <nav className="app-sidebar">
         <div className="sidebar-logo" style={{ padding:"20px 16px 20px", borderBottom:"1px solid #ffffff0e" }}>
-          <img src="/logo.png" alt="You First" style={{ width:"100%", maxWidth:170, filter:"brightness(0) invert(1)", opacity:.95, display:"block" }}/>
+          <img src="/logo.png" alt="You First" style={{ width:"100%", maxWidth:170, filter:"invert(1)", opacity:.9, display:"block" }}/>
         </div>
 
         <div style={{ flex:1, padding:"8px 8px" }}>
@@ -88,7 +88,7 @@ export default function App() {
 
       <main className="app-main">
         <div className="mobile-header" style={{ display:"none" }}>
-          <img src="/logo.png" alt="You First" style={{ height:32, objectFit:"contain" }}/>
+          <img src="/logo.png" alt="You First" style={{ height:36, objectFit:"contain", filter:"invert(1)", opacity:.9 }}/>
         </div>
         <PageWrapper>
           <Routes>

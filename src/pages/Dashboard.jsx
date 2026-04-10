@@ -138,7 +138,6 @@ export default function Dashboard() {
   if (loading) return (
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100vh",gap:32,background:"#f5f0eb"}}>
       <img src="/logo.png" alt="You First" style={{width:"min(500px,80vw)",maxHeight:"50vh",objectFit:"contain"}}/>
-      <div style={{fontSize:13,color:"#9ca3af",letterSpacing:".5px"}}>Chargement...</div>
     </div>
   );
 
